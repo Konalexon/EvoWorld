@@ -105,14 +105,14 @@ export default class GameScene extends Phaser.Scene {
             lifespan: 1000,
             speedY: { min: 400, max: 600 },
             speedX: { min: -50, max: 50 },
-            scale: { start: 0.1, end: 0.1 },
+            scale: { start: 0.15, end: 0.15 }, // Slightly larger
             quantity: 2,
             frequency: 50,
-            alpha: { start: 0.6, end: 0 },
-            tint: 0xaaddff
+            alpha: { start: 0.9, end: 0.2 }, // More visible
+            tint: 0xffffff // White for better visibility on all backgrounds
         });
         this.rainParticles.setScrollFactor(0);
-        this.rainParticles.setDepth(100); // Rain above map (0), below UI (200)
+        this.rainParticles.setDepth(199); // Max depth below UI (200)
         this.rainParticles.stop();
     }
 
