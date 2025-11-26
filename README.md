@@ -1,106 +1,44 @@
-# 🦖 EvoWorld
-### *Eat. Evolve. Survive.*
+# 🌱 EvoWorld
+### *Grow. Evolve. Dominate.*
 
-![Version](https://img.shields.io/badge/version-0.3.1-green.svg) ![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Status](https://img.shields.io/badge/status-Active%20Development-orange.svg)
+![Status](https://img.shields.io/badge/status-Live%20Development-green.svg) ![Platform](https://img.shields.io/badge/platform-Browser-blue.svg)
 
-**EvoWorld** is a browser-based 2D survival evolution game inspired by *Mope.io*. Start as a tiny seed, gather resources, and choose your evolutionary path: will you become a ruthless predator or a majestic guardian of nature?
+**EvoWorld** is a 2D browser-based survival game where you start as a humble seed and evolve into powerful botanical forms. Inspired by the mechanics of *Mope.io*, but set in a ruthless garden where only the strongest plants survive.
 
 ---
 
-## 🌍 The World
-The world is alive and dangerous. Explore diverse biomes, manage your thirst, and watch out for other players.
+## 🍃 The Garden
+The world is a living, breathing ecosystem. You must navigate through distinct biomes, each with its own dangers and resources.
 
 ### 🌲 Biomes
-*   **Meadow**: The safe haven. Abundant resources, perfect for early growth.
-*   **Dark Forest**: The edges of the map. High-risk, high-reward resources.
-*   **Lakes**: Scattered oases. Essential for refilling your water bar.
+*   **Meadow**: A lush, green safe zone perfect for seedlings.
+*   **Dark Forest**: A shadowy realm on the edges, filled with high-XP nutrients but lurking dangers.
+*   **Lakes**: Vital water sources scattered across the map. Control them to survive.
 
 ---
 
 ## 🧬 Evolution Paths
-At **300 XP**, you face a choice that defines your destiny.
+Your choices determine your form. Will you become a predator or a guardian?
 
-### 🔴 The Path of Evil (Carnivore)
-*   **Playstyle**: Aggressive, Hunter.
-*   **Ability**: `DASH` (Spacebar) - A burst of speed to catch prey or escape. Costs Water.
-*   **Evolution**: Carnivore ➔ Venus Flytrap ➔ ???
+### 🔴 The Path of Thorns (Carnivore)
+*   **Role**: Aggressive Hunter
+*   **Ability**: `DASH` (Spacebar) - A burst of speed to ambush prey.
+*   **Evolution**: Carnivore Plant ➔ Venus Flytrap ➔ ???
 
-### 🟢 The Path of Peace (Tree)
-*   **Playstyle**: Defensive, Tank.
-*   **Ability**: `HEAL` (Spacebar) - Regenerate health and gain temporary defense. Costs Water.
+### 🟢 The Path of Roots (Guardian)
+*   **Role**: Defensive Tank
+*   **Ability**: `HEAL` (Spacebar) - Draw water from the earth to regenerate health.
 *   **Evolution**: Walking Tree ➔ Ancient Guardian ➔ ???
 
 ---
 
-## 🎮 How to Play
-1.  **Move**: Mouse cursor controls your character.
-2.  **Eat**: Collect Water 💧, Sun ☀️, and Soil 🟤 to gain XP.
-3.  **Drink**: Keep your **Water Bar** (Blue) full by finding water sources. Dehydration kills!
-4.  **Combat**:
-    *   Larger players damage smaller players on contact.
-    *   Use your abilities wisely to survive.
-5.  **Evolve**: Reach XP thresholds to unlock new forms and abilities.
-
----
-
-## 🛠️ Tech Stack
-Built with modern web technologies for performance and scalability.
-
-*   **Core**: [Phaser 3](https://phaser.io/) (Game Engine)
-*   **Build Tool**: [Vite](https://vitejs.dev/)
-*   **Language**: JavaScript (ES6+)
-*   **Assets**: Custom Vector Graphics (SVG) & Procedural Textures
-
----
-
-## 🗺️ Roadmap
-
-### Phase 1: The Seed (Completed) ✅
-*   [x] Core Movement & Growth System
-*   [x] Resource Gathering
-*   [x] Basic UI (XP Bar, Leaderboard)
-
-### Phase 2: Evolution & Combat (Completed) ✅
-*   [x] Evolution UI (Evil vs Peace)
-*   [x] Bot AI (Smart resource gathering)
-*   [x] Combat Logic (Size-based damage, Bounce-back)
-*   [x] High-Quality SVG Assets
-
-### Phase 3: Expansion (Current) 🚧
-*   [x] **Biomes**: Meadow, Dark Forest, Lake
-*   [x] **Thirst System**: Water mechanics
-*   [x] **Abilities**: Dash & Heal
-*   [ ] **Food Chain Polish**: More visual feedback
-
-### Phase 4: Multiplayer (Planned) 🔮
-*   [ ] Node.js + Socket.io Server
-*   [ ] Real-time Player Synchronization
-*   [ ] Global Leaderboards
-
----
-
-## 🚀 Installation
-
-1.  **Clone the repository**
-    ```bash
-    git clone https://github.com/yourusername/EvoWorld.git
-    cd EvoWorld
-    ```
-
-2.  **Install dependencies**
-    ```bash
-    npm install
-    ```
-
-3.  **Run the development server**
-    ```bash
-    npm run dev
-    ```
-
-4.  Open `http://localhost:5173` in your browser.
+## 🎮 Gameplay Mechanics
+*   **Thirst System**: Water is life. Keep your **Water Bar** full by staying near lakes or collecting dew.
+*   **Photosynthesis**: Collect Sun ☀️ and Soil 🟤 to gain XP and grow larger.
+*   **Survival of the Fittest**: Larger plants can crush smaller ones. Evolve to move up the food chain.
 
 ---
 
 <div align="center">
-  <sub>Designed & Engineered by <b>SpartaKoli</b> with ❤️</sub>
+  <sub>© 2025 EvoWorld. Private Development Project. All Rights Reserved.</sub>
 </div>
