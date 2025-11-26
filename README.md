@@ -48,10 +48,10 @@ This isn't just a game; it's a simulation of ruthless natural selection.
 ## 📸 Visual Gallery
 
 ### The Evolution UI
-//screenshots
+SCREENSHOTS
 
 ### The Dark Forest
-//screenshots
+SCREENSHOTS
 
 ---
 
@@ -71,7 +71,7 @@ This isn't just a game; it's a simulation of ruthless natural selection.
 
 ## 🗺️ Development Roadmap
 
-We are constantly evolving. Here is the master plan for **EvoWorld**:
+I am constantly working on this project. Here is the master plan for **EvoWorld**:
 
 ### ✅ Phase 1: Foundation (Completed)
 *   Core Game Loop (Eat, Grow, Die).
