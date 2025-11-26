@@ -1,92 +1,102 @@
-# 🌱 EvoWorld
-### *Grow. Evolve. Dominate.*
+# 🦖 EvoWorld
+### *The Future of Browser Survival*
 
-![Status](https://img.shields.io/badge/status-Live%20Development-green.svg) ![Platform](https://img.shields.io/badge/platform-Browser-blue.svg) ![Version](https://img.shields.io/badge/version-0.4.0-purple.svg)
+![Status](https://img.shields.io/badge/Project_Status-Active_Development-success?style=for-the-badge&logo=statuspage) ![Version](https://img.shields.io/badge/Version-0.4.0-blueviolet?style=for-the-badge) ![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)
 
-**EvoWorld** is a next-generation 2D survival game inspired by the chaotic ecosystem of *Mope.io*. Set in a ruthless, living garden, you begin as a fragile seed and must consume nutrients, manage your hydration, and evolve into terrifying botanical monstrosities or majestic guardians of nature.
+**EvoWorld** redefines the .io survival genre by merging the chaotic fun of *Mope.io* with deep, strategic evolution mechanics. A fully interactive, living ecosystem built for the modern web.
 
----
-
-## 🍃 The Living World (Current Features)
-
-The world of EvoWorld is not just a static map; it is a breathing ecosystem divided into distinct biomes, each requiring different survival strategies.
-
-### 🗺️ Biomes
-*   **🌼 The Meadow (Safe Zone)**
-    *   **Description**: A lush, sun-drenched plain in the center of the map.
-    *   **Resources**: Abundant Sun Orbs ☀️ and Soil 🟤.
-    *   **Danger Level**: Low. Perfect for seedlings to grow.
-*   **🌲 The Dark Forest (Danger Zone)**
-    *   **Description**: The shadowy edges of the map where light is scarce.
-    *   **Resources**: High-XP "Rotten Soil" and rare "Moonlight" orbs.
-    *   **Danger Level**: High. Home to aggressive predators.
-*   **💧 The Lakes (Vitality)**
-    *   **Description**: Scattered bodies of fresh water.
-    *   **Function**: The only place to rapidly refill your **Water Bar**. Control the lakes, control the server.
-
-### 🧬 Evolution Paths
-At **300 XP**, your genetic code destabilizes, forcing a permanent choice:
-
-#### 🔴 Path of Thorns (The Predator)
-*   **Playstyle**: Aggressive, Assassin, High Damage.
-*   **Tier 1: Carnivore Plant**: Capable of eating smaller seeds.
-*   **Tier 2: Venus Flytrap**:
-    *   **Ability**: `SNAP` - Instantly deals massive damage to touching enemies.
-    *   **Passive**: Gains more XP from killing players than eating food.
-*   **Tier 3 (Coming Soon)**: **Corpse Flower** (Emits toxic gas).
-
-#### 🟢 Path of Roots (The Guardian)
-*   **Playstyle**: Defensive, Tank, Support.
-*   **Tier 1: Walking Tree**: High HP, slow movement.
-*   **Tier 2: Ancient Guardian**:
-    *   **Ability**: `PHOTOSYNTHESIS` (Spacebar) - Roots into the ground to rapidly heal and gain armor.
-    *   **Passive**: Takes 50% less damage from dehydration.
-*   **Tier 3 (Coming Soon)**: **World Tree** (Spawns healing fruit for allies).
+[Explore Features](#-key-features) • [View Gallery](#-visual-gallery) • [Tech Stack](#-technology-stack) • [Roadmap](#-development-roadmap)
 
 ---
 
-## 🔮 The Roadmap (Future Updates)
+## 💎 Project Vision
 
-We are building a massive, interconnected world. Here is what's coming next, inspired by the best survival games.
+> *"Survival isn't just about eating; it's about becoming the apex of evolution."*
 
-### 🌪️ Phase 4: Weather & Atmosphere
-*   **Rainstorms**: Random events that refill water bars globally and spawn "Super Water" (+XP).
-*   **Droughts**: Water drains 2x faster. Lakes shrink. Survival becomes desperate.
-*   **Fog of War**: Vision radius decreases in the Dark Forest.
+In a genre dominated by simple circles and basic mechanics, **EvoWorld** brings depth back to browser gaming. We are building a platform where players don't just grow larger—they evolve, adapt, and specialize. From the humble seed to the terrifying Venus Flytrap, every choice matters.
 
-### 🌋 Phase 5: Extreme Biomes
-*   **The Desert**:
-    *   **New Path**: **Cactus** (Reflects damage).
-    *   **Mechanic**: Water drains instantly unless you are a desert native.
-*   **The Arctic**:
-    *   **New Path**: **Pine/Evergreen** (Immune to freeze).
-    *   **Mechanic**: "Freeze Bar" - stop moving to freeze and gain armor, but lose health if frozen too long.
-*   **The Volcano**:
-    *   **New Path**: **Fire Flower** (Shoots projectiles).
-    *   **Mechanic**: Lava burns non-fire plants.
-
-### 👑 Phase 6: Apex Predators (Bosses)
-*   **The Gardener**: An AI boss that spawns every 15 minutes. Wields a giant shovel. Drops massive XP.
-*   **Locust Swarm**: A cloud of AI bots that devours all resources in a biome. Players must band together to stop them.
-
-### ✨ Phase 7: Rare Genetics (1/1000 Chance)
-*   **Golden Seed**: Starts with 2x XP gain.
-*   **Albino Flytrap**: Invisible on snow/sand.
-*   **Obsidian Tree**: 2x Health, but moves 50% slower.
+This isn't just a game; it's a simulation of ruthless natural selection.
 
 ---
 
-## 📜 Mechanics Breakdown
+## 🚀 Key Features
 
-| Mechanic | Description |
-| :--- | :--- |
-| **Thirst** 💧 | Your blue bar. Decays over time. If empty, you take damage (Dehydration). |
-| **XP / Growth** 📈 | Eat food to grow. Larger size = more HP + ability to eat smaller players. |
-| **Combat** ⚔️ | Collision-based. If `Your Size > Enemy Size`, you deal damage. |
-| **Abilities** ⚡ | Press **SPACE**. Costs Water. Unique to every evolution form. |
+| 🧬 Evolution Engine | 🌍 Living Ecosystem | ⚔️ Strategic Combat |
+| :--- | :--- | :--- |
+| **Dynamic Paths**<br>Choose between the aggressive *Path of Thorns* or the defensive *Path of Roots*. | **Biomes**<br>Navigate the safe *Meadows*, the resource-rich *Dark Forest*, and vital *Lakes*. | **Active Abilities**<br>Use `DASH`, `HEAL`, or `SNAP` to outplay opponents, not just out-eat them. |
+| **Visual Progression**<br>Character models change and grow in real-time as you gain XP. | **Thirst System**<br>Manage your hydration levels. Water is as precious as XP. | **Physics-Based**<br>Momentum, collision weight, and bounce-back mechanics. |
+| **Procedural Growth**<br>Stats scale dynamically with size. | **Smart AI**<br>Bots that hunt, gather, and evolve alongside players. | **Fluid Controls**<br>Smooth, mouse-following movement with "look-ahead" camera. |
+
+---
+
+## 🔍 Deep Dive: The Experience
+
+### 🔴 For the Hunter (The Carnivore)
+*   **Aggressive Playstyle**: Designed for players who crave the thrill of the hunt.
+*   **Instant Gratification**: Use the **Dash** ability to close gaps and secure kills.
+*   **High Risk, High Reward**: Lower max health, but higher damage output.
+*   **Apex Potential**: Evolve into the *Venus Flytrap* to dominate the food chain.
+
+### 🟢 For the Guardian (The Tree)
+*   **Defensive Playstyle**: Built for players who prefer sustainability and control.
+*   **Sustainability**: Use **Photosynthesis** to heal and tank damage.
+*   **Territory Control**: dominate an area by outlasting your opponents.
+*   **Team Anchor**: Future updates will allow Trees to buff nearby allies.
+
+---
+
+## 📸 Visual Gallery
+
+### The Evolution UI
+A sleek, card-based interface allowing players to choose their genetic destiny.
+
+### The Dark Forest
+A dangerous, high-contrast biome where only the strongest survive.
+
+---
+
+## 💻 Technology Stack
+
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black) ![Phaser](https://img.shields.io/badge/Phaser_3-000000?style=flat&logo=phaser&logoColor=white) ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white)
+
+---
+
+## 🏗️ Architecture Highlights
+
+*   **Entity-Component System**: Custom implementation within Phaser 3 for modular ability handling.
+*   **Spatial Partitioning**: Optimized collision detection for hundreds of entities using QuadTrees (Planned).
+*   **Client-Side Prediction**: Smooth movement interpolation to mask latency (Multiplayer Phase).
+
+---
+
+## 🗺️ Development Roadmap
+
+We are constantly evolving. Here is what's next for **EvoWorld**:
+
+### Phase 1: Foundation (Completed) ✅
+*   Core Game Loop (Eat, Grow, Die).
+*   Basic Evolution System (Seed -> Tier 1).
+*   Resource Spawning & Management.
+
+### Phase 2: The Split (Completed) ✅
+*   **Path Selection**: Evil vs Peace.
+*   **Bot AI**: Intelligent resource gathering and combat.
+*   **UI Overhaul**: XP Bars, Leaderboards, and Minimap.
+
+### Phase 3: Expansion (Completed) ✅
+*   **Biomes**: Visual and mechanical distinction between areas.
+*   **Thirst Mechanic**: Adding a survival layer beyond just XP.
+*   **Active Abilities**: Input-based skills (Spacebar).
+
+### Phase 4: Future Horizons (In Progress) 🚧
+*   **Multiplayer**: Real-time Socket.io server for global play.
+*   **Weather System**: Rain, Droughts, and Fog.
+*   **Boss Encounters**: AI-controlled "Gardeners" that challenge the server.
+*   **Mobile Support**: Touch controls for iOS and Android.
 
 ---
 
 <div align="center">
-  <sub>© 2025 EvoWorld. Private Development Project. All Rights Reserved.</sub>
+  <p>© 2025 EvoWorld. Private Development Project.</p>
+  <p>Designed & Engineered by <b>SpartaKoli</b> with ❤️</p>
 </div>
