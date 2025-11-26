@@ -1,0 +1,27 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#795548;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5D4037;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Legs -->
+  <path d="M50 100 L 40 128 L 55 128 L 60 110" fill="url(#bark)" stroke="#3E2723" stroke-width="2"/>
+  <path d="M78 100 L 88 128 L 73 128 L 68 110" fill="url(#bark)" stroke="#3E2723" stroke-width="2"/>
+  
+  <!-- Body -->
+  <rect x="44" y="60" width="40" height="50" rx="10" fill="url(#bark)" stroke="#3E2723" stroke-width="2"/>
+  
+  <!-- Face -->
+  <circle cx="55" cy="75" r="3" fill="#CDC146"/>
+  <circle cx="73" cy="75" r="3" fill="#CDC146"/>
+  <path d="M60 85 Q 64 90 68 85" stroke="#3E2723" stroke-width="2" fill="none"/>
+  
+  <!-- Leaves -->
+  <circle cx="40" cy="50" r="15" fill="#4CAF50" stroke="#2E7D32" stroke-width="2"/>
+  <circle cx="88" cy="50" r="15" fill="#4CAF50" stroke="#2E7D32" stroke-width="2"/>
+  <circle cx="64" cy="30" r="20" fill="#66BB6A" stroke="#2E7D32" stroke-width="2"/>
+  <circle cx="25" cy="65" r="10" fill="#81C784" stroke="#2E7D32" stroke-width="2"/>
+  <circle cx="103" cy="65" r="10" fill="#81C784" stroke="#2E7D32" stroke-width="2"/>
+</svg>

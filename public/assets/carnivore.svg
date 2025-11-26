@@ -1,0 +1,38 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:rgb(255,0,0);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(100,0,0);stop-opacity:1" />
+    </radialGradient>
+    <linearGradient id="stem" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2E7D32;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Stem/Body -->
+  <path d="M64 110 Q 64 128 50 128 L 78 128 Q 64 128 64 110 L 64 80" fill="url(#stem)" stroke="#1B5E20" stroke-width="2"/>
+  <path d="M40 90 Q 20 80 30 110" fill="none" stroke="#388E3C" stroke-width="4"/>
+  <path d="M88 90 Q 108 80 98 110" fill="none" stroke="#388E3C" stroke-width="4"/>
+  
+  <!-- Head -->
+  <ellipse cx="64" cy="50" rx="40" ry="35" fill="url(#grad1)" stroke="#5D1010" stroke-width="3"/>
+  
+  <!-- Mouth -->
+  <path d="M30 50 Q 64 80 98 50" fill="#3E0000" stroke="#000" stroke-width="2"/>
+  
+  <!-- Teeth -->
+  <path d="M35 50 L 40 65 L 45 50" fill="white"/>
+  <path d="M50 50 L 55 65 L 60 50" fill="white"/>
+  <path d="M68 50 L 73 65 L 78 50" fill="white"/>
+  <path d="M83 50 L 88 65 L 93 50" fill="white"/>
+  
+  <!-- Eyes -->
+  <circle cx="45" cy="35" r="5" fill="white"/>
+  <circle cx="45" cy="35" r="2" fill="black"/>
+  <circle cx="83" cy="35" r="5" fill="white"/>
+  <circle cx="83" cy="35" r="2" fill="black"/>
+  
+  <!-- Spikes -->
+  <path d="M24 50 L 14 40 L 28 40" fill="#1B5E20"/>
+  <path d="M104 50 L 114 40 L 100 40" fill="#1B5E20"/>
+</svg>
