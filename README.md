@@ -67,36 +67,6 @@ A dangerous, high-contrast biome where only the strongest survive.
 *   **Spatial Partitioning**: Optimized collision detection for hundreds of entities using QuadTrees (Planned).
 *   **Client-Side Prediction**: Smooth movement interpolation to mask latency (Multiplayer Phase).
 
----
-
-## 🗺️ Development Roadmap
-
-We are constantly evolving. Here is what's next for **EvoWorld**:
-
-### Phase 1: Foundation (Completed) ✅
-*   Core Game Loop (Eat, Grow, Die).
-*   Basic Evolution System (Seed -> Tier 1).
-*   Resource Spawning & Management.
-
-### Phase 2: The Split (Completed) ✅
-*   **Path Selection**: Evil vs Peace.
-*   **Bot AI**: Intelligent resource gathering and combat.
-*   **UI Overhaul**: XP Bars, Leaderboards, and Minimap.
-
-### Phase 3: Expansion (Completed) ✅
-*   **Biomes**: Visual and mechanical distinction between areas.
-*   **Thirst Mechanic**: Adding a survival layer beyond just XP.
-*   **Active Abilities**: Input-based skills (Spacebar).
-
-### Phase 4: Future Horizons (In Progress) 🚧
-*   **Multiplayer**: Real-time Socket.io server for global play.
-*   **Weather System**: Rain, Droughts, and Fog.
-*   **Boss Encounters**: AI-controlled "Gardeners" that challenge the server.
-*   **Mobile Support**: Touch controls for iOS and Android.
-
----
-
-<div align="center">
   <p>© 2025 EvoWorld. Private Development Project.</p>
   <p>Designed & Engineered by <b>SpartaKoli</b> with ❤️</p>
 </div>
