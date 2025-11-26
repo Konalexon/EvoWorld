@@ -99,20 +99,29 @@ export default class GameScene extends Phaser.Scene {
     }
 
     createRain() {
-        this.rainParticles = this.add.particles(0, 0, 'water', {
+        // Create a custom high-contrast rain texture
+        if (!this.textures.exists('rain_drop')) {
+            const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+            graphics.fillStyle(0x00ffff, 1); // Bright Cyan
+            graphics.fillRect(0, 0, 4, 15);
+            graphics.lineStyle(2, 0xffffff, 1); // White Border
+            graphics.strokeRect(0, 0, 4, 15);
+            graphics.generateTexture('rain_drop', 6, 17);
+        }
+
+        this.rainParticles = this.add.particles(0, 0, 'rain_drop', {
             x: { min: 0, max: window.innerWidth },
             y: -50,
-            lifespan: 1000,
-            speedY: { min: 400, max: 600 },
-            speedX: { min: -50, max: 50 },
-            scale: { start: 0.15, end: 0.15 }, // Slightly larger
-            quantity: 2,
-            frequency: 50,
-            alpha: { start: 0.9, end: 0.2 }, // More visible
-            tint: 0xffffff // White for better visibility on all backgrounds
+            lifespan: 800,
+            speedY: { min: 500, max: 700 },
+            speedX: { min: -20, max: 20 },
+            scale: { start: 1, end: 1 }, // Full scale
+            quantity: 4, // More rain
+            frequency: 20, // More frequent
+            alpha: { start: 1, end: 0.8 }, // Very visible
         });
         this.rainParticles.setScrollFactor(0);
-        this.rainParticles.setDepth(199); // Max depth below UI (200)
+        this.rainParticles.setDepth(199);
         this.rainParticles.stop();
     }
 
