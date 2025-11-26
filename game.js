@@ -106,102 +106,37 @@ export default class GameScene extends Phaser.Scene {
             speedY: { min: 400, max: 600 },
             speedX: { min: -50, max: 50 },
             scale: { start: 0.1, end: 0.1 },
-            quantity: 2,
-            frequency: 50,
-            alpha: { start: 0.6, end: 0 },
-            tint: 0xaaddff
-        });
-        this.rainParticles.setScrollFactor(0);
-        this.rainParticles.setDepth(100);
-        this.rainParticles.stop(); // Start stopped
-    }
-
-    updateWeather(delta) {
-        this.weatherTimer += delta;
-
-        // Change weather every 60 seconds (for testing)
-        if (this.weatherTimer > 60000) {
-            this.weatherTimer = 0;
-            if (this.weather === 'clear') {
-                this.weather = 'rain';
-                this.rainParticles.start();
-                this.weatherText.setText('Weather: RAIN 🌧️');
-                this.weatherText.setColor('#00ffff');
-                // Spawn Super Water
-                this.spawnResource('water', true);
-                this.spawnResource('water', true);
-                this.spawnResource('water', true);
-            } else {
-                this.weather = 'clear';
-                this.rainParticles.stop();
-                this.weatherText.setText('Weather: CLEAR ☀️');
-                this.weatherText.setColor('#ffff00');
-            }
         }
-
-        // Rain Effect: Refill Water
-        if (this.weather === 'rain') {
-            this.playerStats.water = Math.min(this.playerStats.maxWater, this.playerStats.water + (delta / 1000) * 5);
-        }
-    }
-
-    createBiomes() {
-        // Simple grid-based biome generation
-        const tileSize = 512; // Texture size (approx)
-        const cols = Math.ceil(4000 / tileSize);
-        const rows = Math.ceil(4000 / tileSize);
-
-        for (let y = 0; y < rows; y++) {
-            for (let x = 0; x < cols; x++) {
-                const posX = x * tileSize;
-                const posY = y * tileSize;
-
-                // Determine Biome
-                let texture = 'meadow';
-
-                // Dark Forest at edges (10% border)
-                if (x < 1 || x >= cols - 1 || y < 1 || y >= rows - 1) {
-                    texture = 'forest';
-                }
-                // Random Lakes (10% chance in meadow)
-                else if (Math.random() < 0.1) {
-                    texture = 'lake';
-                }
-
-                this.add.image(posX, posY, texture).setOrigin(0).setDisplaySize(tileSize, tileSize).setDepth(0);
-            }
-        }
-    }
 
     createUI() {
-        // Bars Container
-        const barWidth = 400;
-        const x = window.innerWidth / 2 - barWidth / 2;
+            // Bars Container
+            const barWidth = 400;
+            const x = window.innerWidth / 2 - barWidth / 2;
 
-        // XP Bar
-        this.xpBarBg = this.add.rectangle(x, 20, barWidth, 15, 0x333333).setScrollFactor(0).setOrigin(0).setDepth(20);
-        this.xpBarFill = this.add.rectangle(x, 20, 0, 15, 0x00ff00).setScrollFactor(0).setOrigin(0).setDepth(21);
-        this.xpText = this.add.text(window.innerWidth / 2, 28, 'XP: 0 / 300', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(22);
+            // XP Bar
+            this.xpBarBg = this.add.rectangle(x, 20, barWidth, 15, 0x333333).setScrollFactor(0).setOrigin(0).setDepth(20);
+            this.xpBarFill = this.add.rectangle(x, 20, 0, 15, 0x00ff00).setScrollFactor(0).setOrigin(0).setDepth(21);
+            this.xpText = this.add.text(window.innerWidth / 2, 28, 'XP: 0 / 300', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(22);
 
-        // Water Bar (Thirst)
-        this.waterBarBg = this.add.rectangle(x, 40, barWidth, 15, 0x333333).setScrollFactor(0).setOrigin(0).setDepth(20);
-        this.waterBarFill = this.add.rectangle(x, 40, barWidth, 15, 0x2196F3).setScrollFactor(0).setOrigin(0).setDepth(21);
-        this.waterText = this.add.text(window.innerWidth / 2, 48, 'Water: 100%', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(22);
+            // Water Bar (Thirst)
+            this.waterBarBg = this.add.rectangle(x, 40, barWidth, 15, 0x333333).setScrollFactor(0).setOrigin(0).setDepth(20);
+            this.waterBarFill = this.add.rectangle(x, 40, barWidth, 15, 0x2196F3).setScrollFactor(0).setOrigin(0).setDepth(21);
+            this.waterText = this.add.text(window.innerWidth / 2, 48, 'Water: 100%', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(22);
 
-        // Weather Indicator
-        this.weatherText = this.add.text(window.innerWidth - 220, 200, 'Weather: CLEAR ☀️', {
-            fontSize: '16px', fill: '#ffff00', fontStyle: 'bold', stroke: '#000', strokeThickness: 2
-        }).setScrollFactor(0).setDepth(20);
+            // Weather Indicator
+            this.weatherText = this.add.text(window.innerWidth - 220, 200, 'Weather: CLEAR ☀️', {
+                fontSize: '16px', fill: '#ffff00', fontStyle: 'bold', stroke: '#000', strokeThickness: 2
+            }).setScrollFactor(0).setDepth(20);
 
-        // Form
-        this.formText = this.add.text(window.innerWidth / 2, window.innerHeight - 50, 'Form: SEED', {
-            fontSize: '24px', fill: '#ffd700', stroke: '#000', strokeThickness: 4, fontStyle: 'bold'
-        }).setScrollFactor(0).setOrigin(0.5).setDepth(20);
+            // Form
+            this.formText = this.add.text(window.innerWidth / 2, window.innerHeight - 50, 'Form: SEED', {
+                fontSize: '24px', fill: '#ffd700', stroke: '#000', strokeThickness: 4, fontStyle: 'bold'
+            }).setScrollFactor(0).setOrigin(0.5).setDepth(20);
 
-        // Leaderboard
-        this.leaderboardEntries = [];
-        this.add.text(window.innerWidth - 220, 20, 'Leaderboard', { fontSize: '18px', fill: '#ffd700', fontStyle: 'bold' }).setScrollFactor(0).setDepth(20);
-        for (let i = 0; i < 5; i++) {
+            // Leaderboard
+            this.leaderboardEntries = [];
+            this.add.text(window.innerWidth - 220, 20, 'Leaderboard', { fontSize: '18px', fill: '#ffd700', fontStyle: 'bold' }).setScrollFactor(0).setDepth(20);
+            for(let i = 0; i< 5; i++) {
             this.leaderboardEntries.push(this.add.text(window.innerWidth - 220, 50 + (i * 25), '', { fontSize: '14px', fill: '#fff' }).setScrollFactor(0).setDepth(20));
         }
     }
