@@ -54,6 +54,11 @@ export default class GameScene extends Phaser.Scene {
         this.isEvolving = false;
         this.lastCombatTime = 0;
 
+        // Weather System
+        this.weather = 'clear';
+        this.weatherTimer = 0;
+        this.createRain();
+
         // Name Tag
         this.nameTag = this.add.text(this.player.x, this.player.y - 40, this.nickname, {
             fontSize: '14px', fill: '#fff', stroke: '#000', strokeThickness: 3, fontFamily: 'Arial'
@@ -91,6 +96,53 @@ export default class GameScene extends Phaser.Scene {
 
         // Input
         this.input.keyboard.on('keydown-SPACE', this.useAbility, this);
+    }
+
+    createRain() {
+        this.rainParticles = this.add.particles(0, 0, 'water', {
+            x: { min: 0, max: window.innerWidth },
+            y: -50,
+            lifespan: 1000,
+            speedY: { min: 400, max: 600 },
+            speedX: { min: -50, max: 50 },
+            scale: { start: 0.1, end: 0.1 },
+            quantity: 2,
+            frequency: 50,
+            alpha: { start: 0.6, end: 0 },
+            tint: 0xaaddff
+        });
+        this.rainParticles.setScrollFactor(0);
+        this.rainParticles.setDepth(100);
+        this.rainParticles.stop(); // Start stopped
+    }
+
+    updateWeather(delta) {
+        this.weatherTimer += delta;
+
+        // Change weather every 60 seconds (for testing)
+        if (this.weatherTimer > 60000) {
+            this.weatherTimer = 0;
+            if (this.weather === 'clear') {
+                this.weather = 'rain';
+                this.rainParticles.start();
+                this.weatherText.setText('Weather: RAIN 🌧️');
+                this.weatherText.setColor('#00ffff');
+                // Spawn Super Water
+                this.spawnResource('water', true);
+                this.spawnResource('water', true);
+                this.spawnResource('water', true);
+            } else {
+                this.weather = 'clear';
+                this.rainParticles.stop();
+                this.weatherText.setText('Weather: CLEAR ☀️');
+                this.weatherText.setColor('#ffff00');
+            }
+        }
+
+        // Rain Effect: Refill Water
+        if (this.weather === 'rain') {
+            this.playerStats.water = Math.min(this.playerStats.maxWater, this.playerStats.water + (delta / 1000) * 5);
+        }
     }
 
     createBiomes() {
@@ -135,6 +187,11 @@ export default class GameScene extends Phaser.Scene {
         this.waterBarBg = this.add.rectangle(x, 40, barWidth, 15, 0x333333).setScrollFactor(0).setOrigin(0).setDepth(20);
         this.waterBarFill = this.add.rectangle(x, 40, barWidth, 15, 0x2196F3).setScrollFactor(0).setOrigin(0).setDepth(21);
         this.waterText = this.add.text(window.innerWidth / 2, 48, 'Water: 100%', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(22);
+
+        // Weather Indicator
+        this.weatherText = this.add.text(window.innerWidth - 220, 200, 'Weather: CLEAR ☀️', {
+            fontSize: '16px', fill: '#ffff00', fontStyle: 'bold', stroke: '#000', strokeThickness: 2
+        }).setScrollFactor(0).setDepth(20);
 
         // Form
         this.formText = this.add.text(window.innerWidth / 2, window.innerHeight - 50, 'Form: SEED', {
@@ -201,8 +258,10 @@ export default class GameScene extends Phaser.Scene {
         }
         this.nameTag.setPosition(this.player.x, this.player.y - (40 * this.player.scale));
 
-        // 2. Thirst Decay
+        // 2. Thirst Decay & Weather
         this.playerStats.water -= (delta / 1000) * 2; // Lose 2 water per sec
+        this.updateWeather(delta);
+
         if (this.playerStats.water <= 0) {
             this.playerStats.water = 0;
             this.playerStats.hp -= (delta / 1000) * 5; // Damage when dehydrated
@@ -310,8 +369,17 @@ export default class GameScene extends Phaser.Scene {
 
     eatWater(player, water) {
         water.disableBody(true, true);
-        this.gainXP(5);
-        this.playerStats.water = Math.min(this.playerStats.maxWater, this.playerStats.water + 10);
+        const isSuper = water.getData('isSuper');
+        const xp = isSuper ? 15 : 5;
+        const waterGain = isSuper ? 30 : 10;
+
+        this.gainXP(xp);
+        this.playerStats.water = Math.min(this.playerStats.maxWater, this.playerStats.water + waterGain);
+
+        if (isSuper) {
+            const txt = this.add.text(player.x, player.y - 50, '+SUPER WATER!', { fontSize: '20px', fill: '#ffd700', stroke: '#000', strokeThickness: 4 }).setDepth(50);
+            this.tweens.add({ targets: txt, y: player.y - 100, alpha: 0, duration: 1000, onComplete: () => txt.destroy() });
+        }
     }
     eatSun(player, sun) { sun.disableBody(true, true); this.gainXP(8); }
     eatSoil(player, soil) { soil.disableBody(true, true); this.gainXP(3); }
@@ -425,11 +493,17 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    spawnResource(type) {
+    spawnResource(type, isSuper = false) {
         const x = Phaser.Math.Between(0, 4000);
         const y = Phaser.Math.Between(0, 4000);
         let group = type === 'water' ? this.waters : (type === 'sun' ? this.suns : this.soils);
-        group.create(x, y, type).setScale(0.5);
+        const res = group.create(x, y, type).setScale(0.5);
+
+        if (isSuper && type === 'water') {
+            res.setTint(0xffd700); // Gold tint
+            res.setData('isSuper', true);
+            res.setScale(0.8);
+        }
     }
 
     respawnResources() {
