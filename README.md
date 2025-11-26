@@ -1,7 +1,7 @@
 # 🦖 EvoWorld
 ### *Eat. Evolve. Survive.*
 
-![Version](https://img.shields.io/badge/version-0.3.0-green.svg) ![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Status](https://img.shields.io/badge/status-Active%20Development-orange.svg)
+![Version](https://img.shields.io/badge/version-0.3.1-green.svg) ![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Status](https://img.shields.io/badge/status-Active%20Development-orange.svg)
 
 **EvoWorld** is a browser-based 2D survival evolution game inspired by *Mope.io*. Start as a tiny seed, gather resources, and choose your evolutionary path: will you become a ruthless predator or a majestic guardian of nature?
 
