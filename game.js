@@ -28,12 +28,16 @@ export default class GameScene extends Phaser.Scene {
     }
 
     create() {
+        // Constants
+        this.MAP_WIDTH = 8000;
+        this.MAP_HEIGHT = 8000;
+
         // 1. Map & Biomes
-        this.physics.world.setBounds(0, 0, 4000, 4000);
+        this.physics.world.setBounds(0, 0, this.MAP_WIDTH, this.MAP_HEIGHT);
         this.createBiomes();
 
         // 2. Player
-        this.player = this.physics.add.sprite(2000, 2000, 'seed');
+        this.player = this.physics.add.sprite(this.MAP_WIDTH / 2, this.MAP_HEIGHT / 2, 'seed'); // Start in middle
         this.player.setCollideWorldBounds(true);
         this.player.setScale(0.5);
         this.player.setDepth(10);
@@ -54,10 +58,12 @@ export default class GameScene extends Phaser.Scene {
         this.isEvolving = false;
         this.lastCombatTime = 0;
 
-        // Weather System
+        // Weather & Atmosphere
         this.weather = 'clear';
         this.weatherTimer = 0;
+        this.dayTime = 0; // 0-300s cycle
         this.createRain();
+        this.createAtmosphere(); // Fog & Day/Night
 
         // Name Tag
         this.nameTag = this.add.text(this.player.x, this.player.y - 40, this.nickname, {
@@ -65,18 +71,18 @@ export default class GameScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(11);
 
         // 3. Camera
-        this.cameras.main.startFollow(this.player, true, 0.1, 0.1); // Smooth follow
+        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
         this.cameras.main.setZoom(1);
 
         // 4. Resources
         this.waters = this.physics.add.group();
         this.suns = this.physics.add.group();
         this.soils = this.physics.add.group();
-        this.spawnResources(300); // More resources for larger map feel
+        this.spawnResources(600); // More resources for huge map
 
         // 5. Bots
         this.bots = this.physics.add.group();
-        this.createBots(8);
+        this.createBots(15); // More bots
 
         // 6. Collisions
         this.physics.add.overlap(this.player, this.waters, this.eatWater, null, this);
@@ -98,13 +104,43 @@ export default class GameScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-SPACE', this.useAbility, this);
     }
 
+    createAtmosphere() {
+        // 1. Day/Night Overlay (Rectangle)
+        this.dayNightOverlay = this.add.rectangle(0, 0, window.innerWidth, window.innerHeight, 0x000044)
+            .setScrollFactor(0)
+            .setDepth(150) // Below UI (200), Above Rain (100)? No, Rain is 199.
+            // Let's put Rain at 199. DayNight should be below Rain? Or above?
+            // Realistically, rain is affected by light. But for visibility, maybe below rain.
+            // Let's put DayNight at 180.
+            .setAlpha(0)
+            .setBlendMode(Phaser.BlendModes.MULTIPLY);
+
+        // 2. Fog of War (Vignette for Dark Forest)
+        // Create vignette texture
+        if (!this.textures.exists('vignette')) {
+            const canvas = this.textures.createCanvas('vignette', 800, 600);
+            const ctx = canvas.context;
+            const grd = ctx.createRadialGradient(400, 300, 150, 400, 300, 400);
+            grd.addColorStop(0, 'rgba(0,0,0,0)');
+            grd.addColorStop(1, 'rgba(0,0,0,0.9)');
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, 800, 600);
+            canvas.refresh();
+        }
+
+        this.fogOverlay = this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'vignette')
+            .setScrollFactor(0)
+            .setDepth(190) // Above DayNight, Below Rain
+            .setDisplaySize(window.innerWidth, window.innerHeight)
+            .setAlpha(0);
+    }
+
     createRain() {
-        // Create a custom high-contrast rain texture
         if (!this.textures.exists('rain_drop')) {
             const graphics = this.make.graphics({ x: 0, y: 0, add: false });
-            graphics.fillStyle(0x00ffff, 1); // Bright Cyan
+            graphics.fillStyle(0x00ffff, 1);
             graphics.fillRect(0, 0, 4, 15);
-            graphics.lineStyle(2, 0xffffff, 1); // White Border
+            graphics.lineStyle(2, 0xffffff, 1);
             graphics.strokeRect(0, 0, 4, 15);
             graphics.generateTexture('rain_drop', 6, 17);
         }
@@ -112,7 +148,7 @@ export default class GameScene extends Phaser.Scene {
         this.rainParticles = this.add.particles(0, 0, 'rain_drop', {
             x: { min: 0, max: window.innerWidth },
             y: -50,
-            lifespan: 2500, // Ensure it reaches bottom
+            lifespan: 2500,
             speedY: { min: 500, max: 700 },
             speedX: { min: -20, max: 20 },
             scale: { start: 1, end: 1 },
@@ -125,10 +161,39 @@ export default class GameScene extends Phaser.Scene {
         this.rainParticles.stop();
     }
 
+    updateAtmosphere(delta) {
+        // 1. Day/Night Cycle (300s total)
+        this.dayTime += delta / 1000;
+        if (this.dayTime > 300) this.dayTime = 0;
+
+        // Night starts at 150s, peaks at 225s, ends at 300s
+        let targetAlpha = 0;
+        if (this.dayTime > 150) {
+            // 150 -> 225: Fade In
+            // 225 -> 300: Fade Out
+            if (this.dayTime < 225) {
+                targetAlpha = (this.dayTime - 150) / 75 * 0.7; // Max opacity 0.7
+            } else {
+                targetAlpha = (300 - this.dayTime) / 75 * 0.7;
+            }
+        }
+        this.dayNightOverlay.setAlpha(targetAlpha);
+
+        // 2. Fog of War (Dark Forest > 6000)
+        // Fade in fog as player goes deeper into forest
+        const forestStart = 6000;
+        const deepForest = 7000;
+
+        if (this.player.y > forestStart) {
+            const fogAlpha = Math.min(1, (this.player.y - forestStart) / (deepForest - forestStart));
+            this.fogOverlay.setAlpha(fogAlpha);
+        } else {
+            this.fogOverlay.setAlpha(0);
+        }
+    }
+
     updateWeather(delta) {
         this.weatherTimer += delta;
-
-        // Change weather every 60 seconds (for testing)
         if (this.weatherTimer > 60000) {
             this.weatherTimer = 0;
             if (this.weather === 'clear') {
@@ -136,7 +201,6 @@ export default class GameScene extends Phaser.Scene {
                 this.rainParticles.start();
                 this.weatherText.setText('Weather: RAIN 🌧️');
                 this.weatherText.setColor('#00ffff');
-                // Spawn Super Water
                 this.spawnResource('water', true);
                 this.spawnResource('water', true);
                 this.spawnResource('water', true);
@@ -147,18 +211,15 @@ export default class GameScene extends Phaser.Scene {
                 this.weatherText.setColor('#ffff00');
             }
         }
-
-        // Rain Effect: Refill Water
         if (this.weather === 'rain') {
             this.playerStats.water = Math.min(this.playerStats.maxWater, this.playerStats.water + (delta / 1000) * 5);
         }
     }
 
     createBiomes() {
-        // Grid-based biome generation with procedural water
-        const tileSize = 512; // Texture size (approx)
-        const cols = Math.ceil(4000 / tileSize);
-        const rows = Math.ceil(4000 / tileSize);
+        const tileSize = 512;
+        const cols = Math.ceil(this.MAP_WIDTH / tileSize);
+        const rows = Math.ceil(this.MAP_HEIGHT / tileSize);
 
         for (let y = 0; y < rows; y++) {
             for (let x = 0; x < cols; x++) {
@@ -167,19 +228,14 @@ export default class GameScene extends Phaser.Scene {
 
                 let texture = 'meadow';
 
-                // 1. Bottom Area (Y > 3000): Dark Forest
-                if (posY > 3000) {
+                // Dark Forest (Bottom 1/4)
+                if (posY > 6000) {
                     texture = 'forest';
                 }
-                // 2. Upper Area: Meadow with Water Channels
                 else {
-                    // Procedural Water Channels (Sine Wave)
-                    const scale = 0.002;
+                    const scale = 0.001; // Adjusted for larger map
                     const noise = Math.sin(posX * scale) + Math.cos(posY * scale);
-
-                    if (noise > 0.8) {
-                        texture = 'lake';
-                    }
+                    if (noise > 0.8) texture = 'lake';
                 }
 
                 this.add.image(posX, posY, texture).setOrigin(0).setDisplaySize(tileSize, tileSize).setDepth(0);
@@ -197,13 +253,13 @@ export default class GameScene extends Phaser.Scene {
         this.xpBarFill = this.add.rectangle(x, 20, 0, 15, 0x00ff00).setScrollFactor(0).setOrigin(0).setDepth(201);
         this.xpText = this.add.text(window.innerWidth / 2, 28, 'XP: 0 / 300', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(202);
 
-        // Water Bar (Thirst)
+        // Water Bar
         this.waterBarBg = this.add.rectangle(x, 40, barWidth, 15, 0x333333).setScrollFactor(0).setOrigin(0).setDepth(200);
         this.waterBarFill = this.add.rectangle(x, 40, barWidth, 15, 0x2196F3).setScrollFactor(0).setOrigin(0).setDepth(201);
         this.waterText = this.add.text(window.innerWidth / 2, 48, 'Water: 100%', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(202);
 
-        // Weather Indicator
-        this.weatherText = this.add.text(window.innerWidth - 220, 200, 'Weather: CLEAR ☀️', {
+        // Weather Indicator (Above Minimap)
+        this.weatherText = this.add.text(window.innerWidth - 270, window.innerHeight - 300, 'Weather: CLEAR ☀️', {
             fontSize: '16px', fill: '#ffff00', fontStyle: 'bold', stroke: '#000', strokeThickness: 2
         }).setScrollFactor(0).setDepth(200);
 
@@ -212,34 +268,34 @@ export default class GameScene extends Phaser.Scene {
             fontSize: '24px', fill: '#ffd700', stroke: '#000', strokeThickness: 4, fontStyle: 'bold'
         }).setScrollFactor(0).setOrigin(0.5).setDepth(200);
 
-        // Leaderboard (Left Side)
+        // Leaderboard (Left Side, 10 entries)
         const lbX = 20;
         const lbY = 100;
 
-        // Background Panel
-        this.add.rectangle(lbX + 100, lbY + 75, 220, 170, 0x000000, 0.5)
+        // Background Panel (Larger for 10 entries)
+        this.add.rectangle(lbX + 100, lbY + 140, 220, 300, 0x000000, 0.5)
             .setScrollFactor(0).setStrokeStyle(2, 0xffd700).setDepth(200);
 
-        this.add.text(lbX + 10, lbY + 10, '🏆 Leaderboard', {
+        this.add.text(lbX + 110, lbY + 10, '🏆 Leaderboard', {
             fontSize: '20px', fill: '#ffd700', fontStyle: 'bold', stroke: '#000', strokeThickness: 2
-        }).setScrollFactor(0).setDepth(201);
+        }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(201);
 
         this.leaderboardEntries = [];
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 10; i++) {
             this.leaderboardEntries.push(
-                this.add.text(lbX + 10, lbY + 45 + (i * 25), '', {
+                this.add.text(lbX + 110, lbY + 45 + (i * 25), '', {
                     fontSize: '14px', fill: '#fff', stroke: '#000', strokeThickness: 2
-                }).setScrollFactor(0).setDepth(201)
+                }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(201)
             );
         }
     }
 
     createMinimap() {
-        this.minimapSize = 150;
-        const ox = window.innerWidth - 85 - (this.minimapSize / 2);
-        const oy = window.innerHeight - 85 - (this.minimapSize / 2);
+        this.minimapSize = 250; // Larger
+        const ox = window.innerWidth - 20 - this.minimapSize;
+        const oy = window.innerHeight - 20 - this.minimapSize;
 
-        // Minimap Background (Static Terrain)
+        // Minimap Background
         this.minimapBg = this.add.graphics().setScrollFactor(0).setDepth(200);
 
         // Draw Border
@@ -247,24 +303,22 @@ export default class GameScene extends Phaser.Scene {
         this.minimapBg.strokeRect(ox, oy, this.minimapSize, this.minimapSize);
 
         // Draw Terrain
-        const mapScale = this.minimapSize / 4000;
+        const mapScale = this.minimapSize / this.MAP_WIDTH;
         const tileSize = 512;
-        const cols = Math.ceil(4000 / tileSize);
-        const rows = Math.ceil(4000 / tileSize);
+        const cols = Math.ceil(this.MAP_WIDTH / tileSize);
+        const rows = Math.ceil(this.MAP_HEIGHT / tileSize);
 
         for (let y = 0; y < rows; y++) {
             for (let x = 0; x < cols; x++) {
                 const posX = x * tileSize;
                 const posY = y * tileSize;
 
-                let color = 0x4CAF50; // Meadow (Green)
-
-                if (posY > 3000) {
-                    color = 0x1B5E20; // Forest (Dark Green)
-                } else {
-                    const scale = 0.002;
+                let color = 0x4CAF50; // Meadow
+                if (posY > 6000) color = 0x1B5E20; // Forest
+                else {
+                    const scale = 0.001;
                     const noise = Math.sin(posX * scale) + Math.cos(posY * scale);
-                    if (noise > 0.8) color = 0x2196F3; // Lake (Blue)
+                    if (noise > 0.8) color = 0x2196F3; // Lake
                 }
 
                 this.minimapBg.fillStyle(color);
@@ -272,15 +326,14 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
-        // Dynamic Dots Container
         this.minimapDots = this.add.graphics().setScrollFactor(0).setDepth(201);
         this.minimapPlayer = this.add.circle(0, 0, 4, 0x00ff00).setScrollFactor(0).setDepth(202);
     }
 
     updateMinimap() {
-        const mapScale = this.minimapSize / 4000;
-        const ox = window.innerWidth - 85 - (this.minimapSize / 2);
-        const oy = window.innerHeight - 85 - (this.minimapSize / 2);
+        const mapScale = this.minimapSize / this.MAP_WIDTH;
+        const ox = window.innerWidth - 20 - this.minimapSize;
+        const oy = window.innerHeight - 20 - this.minimapSize;
 
         this.minimapPlayer.setPosition(ox + (this.player.x * mapScale), oy + (this.player.y * mapScale));
         this.minimapDots.clear();
@@ -294,10 +347,10 @@ export default class GameScene extends Phaser.Scene {
     }
 
     createBots(count) {
-        const names = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Omega', 'Zeta', 'Eta', 'Theta'];
+        const names = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Omega', 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa', 'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron'];
         for (let i = 0; i < count; i++) {
-            const x = Phaser.Math.Between(100, 3900);
-            const y = Phaser.Math.Between(100, 3900);
+            const x = Phaser.Math.Between(100, this.MAP_WIDTH - 100);
+            const y = Phaser.Math.Between(100, this.MAP_HEIGHT - 100);
             const bot = this.bots.create(x, y, 'seed');
             bot.setScale(0.5);
             bot.setCollideWorldBounds(true);
@@ -337,13 +390,14 @@ export default class GameScene extends Phaser.Scene {
         }
         this.nameTag.setPosition(this.player.x, this.player.y - (40 * this.player.scale));
 
-        // 2. Thirst Decay & Weather
-        this.playerStats.water -= (delta / 1000) * 2; // Lose 2 water per sec
+        // 2. Thirst Decay & Weather & Atmosphere
+        this.playerStats.water -= (delta / 1000) * 2;
         this.updateWeather(delta);
+        this.updateAtmosphere(delta);
 
         if (this.playerStats.water <= 0) {
             this.playerStats.water = 0;
-            this.playerStats.hp -= (delta / 1000) * 5; // Damage when dehydrated
+            this.playerStats.hp -= (delta / 1000) * 5;
             if (this.playerStats.hp <= 0) this.killEntity(this.player, null, this.playerStats, {});
         }
 
@@ -363,7 +417,7 @@ export default class GameScene extends Phaser.Scene {
 
             // Simple AI
             if (!bot.target || Math.random() < 0.01) {
-                bot.target = new Phaser.Math.Vector2(Phaser.Math.Between(0, 4000), Phaser.Math.Between(0, 4000));
+                bot.target = new Phaser.Math.Vector2(Phaser.Math.Between(0, this.MAP_WIDTH), Phaser.Math.Between(0, this.MAP_HEIGHT));
             }
             this.physics.moveToObject(bot, bot.target, 100);
             bot.nameTag.setPosition(bot.x, bot.y - 40);
@@ -382,14 +436,12 @@ export default class GameScene extends Phaser.Scene {
         if (this.playerStats.form === 'seed') return;
 
         if (this.playerStats.path === 'evil') {
-            // Dash (Costs 20 Water)
             if (this.playerStats.water >= 20) {
                 this.playerStats.water -= 20;
                 const angle = this.player.rotation;
                 this.player.body.setVelocity(Math.cos(angle) * 800, Math.sin(angle) * 800);
             }
         } else if (this.playerStats.path === 'peace') {
-            // Shield/Heal (Costs 20 Water)
             if (this.playerStats.water >= 20) {
                 this.playerStats.water -= 20;
                 this.player.setTint(0x00ffff);
@@ -538,7 +590,7 @@ export default class GameScene extends Phaser.Scene {
             if (b.active) all.push({ name: b.getData('stats').name, xp: b.getData('stats').xp, isMe: false });
         });
         all.sort((a, b) => b.xp - a.xp);
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 10; i++) {
             if (all[i]) {
                 this.leaderboardEntries[i].setText(`${i + 1}. ${all[i].name}: ${all[i].xp}`);
                 this.leaderboardEntries[i].setColor(all[i].isMe ? '#0f0' : '#fff');
@@ -557,8 +609,8 @@ export default class GameScene extends Phaser.Scene {
     }
 
     spawnResource(type, isSuper = false) {
-        const x = Phaser.Math.Between(0, 4000);
-        const y = Phaser.Math.Between(0, 4000);
+        const x = Phaser.Math.Between(0, this.MAP_WIDTH);
+        const y = Phaser.Math.Between(0, this.MAP_HEIGHT);
         let group = type === 'water' ? this.waters : (type === 'sun' ? this.suns : this.soils);
         const res = group.create(x, y, type).setScale(0.5);
 
@@ -570,8 +622,8 @@ export default class GameScene extends Phaser.Scene {
     }
 
     respawnResources() {
-        if (this.waters.countActive(true) < 50) this.spawnResource('water');
-        if (this.suns.countActive(true) < 50) this.spawnResource('sun');
-        if (this.soils.countActive(true) < 50) this.spawnResource('soil');
+        if (this.waters.countActive(true) < 100) this.spawnResource('water');
+        if (this.suns.countActive(true) < 100) this.spawnResource('sun');
+        if (this.soils.countActive(true) < 100) this.spawnResource('soil');
     }
 }
