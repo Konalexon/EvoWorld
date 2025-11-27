@@ -103,34 +103,34 @@ I am constantly working on this project. Here is the master plan for **EvoWorld*
 
 ### [✅] Phase 6: Visual Overhaul & Polish (Not-Fully-Completed)
 *   [?] **Organic World Generation**: Noise-based biome blending for natural terrain.
-*   [x]**High-Fidelity Assets**: Custom generated textures for Sand, Snow, and Lava.
-*   [?]**Environmental Decorations**: Pseudo-3D obstacles (Cacti, Rocks, Trees) that blend with the terrain.
-*   [x]**Particle Effects**: Volcano smoke and atmospheric details.
+*   [x] **High-Fidelity Assets**: Custom generated textures for Sand, Snow, and Lava.
+*   [?] **Environmental Decorations**: Pseudo-3D obstacles (Cacti, Rocks, Trees) that blend with the terrain.
+*   [x] **Particle Effects**: Volcano smoke and atmospheric details.
 
 ### [✅] Phase 7: Rare Genetics (Completed)
-*   [x]**Golden Seed**: 1/1000 chance to spawn with 2x XP gain.
-*   [x]**Crystal Variants**: Rare, shiny skin variants with slight defense boost.
-*   [x]**Hard Resources**: Purple resources that require multiple hits and give high XP.
-*   [x]**Movement Mechanics**: Smooth mouse-following movement with biome speed modifiers.
+*   [x] **Golden Seed**: 1/1000 chance to spawn with 2x XP gain.
+*   [x] **Crystal Variants**: Rare, shiny skin variants with slight defense boost.
+*   [x] **Hard Resources**: Purple resources that require multiple hits and give high XP.
+*   [x] **Movement Mechanics**: Smooth mouse-following movement with biome speed modifiers.
 
 ### [✅] Phase 8: Mutation System (Completed)
-*   [x]**DNA Points**: Earn points by leveling up.
-*   [x]**Skill Tree**: Unlock passive buffs (Speed, Health, Regen).
-*   [x]**Specializations**: Unique perks for Carnivores and Trees.
-*   [x]**Lava Damage**: Periodic damage when entering the Volcano biome.
-*   [x]**HP System**: Visual HP bars for all entities and health management.
+*   [x] **DNA Points**: Earn points by leveling up.
+*   [x] **Skill Tree**: Unlock passive buffs (Speed, Health, Regen).
+*   [x] **Specializations**: Unique perks for Carnivores and Trees.
+*   [x] **Lava Damage**: Periodic damage when entering the Volcano biome.
+*   [x] **HP System**: Visual HP bars for all entities and health management.
 
 ### 🏰 Phase 9: Base Building
-*   [ ]**Root Network**: Fast travel tunnels for Trees.
-*   [ ]**Thorn Nests**: Traps and territory control for Carnivores.
+*   [ ] **Root Network**: Fast travel tunnels for Trees.
+*   [ ] **Thorn Nests**: Traps and territory control for Carnivores.
 
 ### ☄️ Phase 10: Cataclysms
-*   [ ]**Forest Fire**: Spreads dynamically from the Volcano.
-*   [ ]**The Flood**: Lakes expand, turning the map into an ocean.
+*   [ ] **Forest Fire**: Spreads dynamically from the Volcano.
+*   [ ] **The Flood**: Lakes expand, turning the map into an ocean.
 
 ### 🌐 Phase 11: Multiplayer
-*   [ ]**Global Servers**: Play with hundreds of players.
-*   [ ]**Clans**: Team up and dominate the leaderboard.
+*   [ ] **Global Servers**: Play with hundreds of players.
+*   [ ] **Clans**: Team up and dominate the leaderboard.
 
 ---
 
