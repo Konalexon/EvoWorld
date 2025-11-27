@@ -97,14 +97,14 @@ I am constantly working on this project. Here is the master plan for **EvoWorld*
 *   [x] **Day/Night Cycle**: Night brings dangerous mobs.
 
 ### [✅] Phase 5: Extreme Biomes (Not-Fully-Completed)
-*   [?] **The Desert**: Sandstorms and rapid dehydration. New **Cactus** path.
-*   [?] **The Arctic**: Snow and freezing mechanics. New **Pine** path.
-*   [?] **The Volcano**: Lava pools and burn damage. New **Fire Flower** path.
+*   [-] **The Desert**: Sandstorms and rapid dehydration. New **Cactus** path.
+*   [-] **The Arctic**: Snow and freezing mechanics. New **Pine** path.
+*   [-] **The Volcano**: Lava pools and burn damage. New **Fire Flower** path.
 
 ### [✅] Phase 6: Visual Overhaul & Polish (Not-Fully-Completed)
-*   [?] **Organic World Generation**: Noise-based biome blending for natural terrain.
+*   [-] **Organic World Generation**: Noise-based biome blending for natural terrain.
 *   [x] **High-Fidelity Assets**: Custom generated textures for Sand, Snow, and Lava.
-*   [?] **Environmental Decorations**: Pseudo-3D obstacles (Cacti, Rocks, Trees) that blend with the terrain.
+*   [-] **Environmental Decorations**: Pseudo-3D obstacles (Cacti, Rocks, Trees) that blend with the terrain.
 *   [x] **Particle Effects**: Volcano smoke and atmospheric details.
 
 ### [✅] Phase 7: Rare Genetics (Completed)
