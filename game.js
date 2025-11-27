@@ -151,9 +151,16 @@ export default class GameScene extends Phaser.Scene {
     }
 
     getBiome(x, y) {
-        if (y > 6000) return 'forest';
+        // Snap coordinates to tile grid (512x512) to match visual generation
+        const tileSize = 512;
+        const tileX = Math.floor(x / tileSize) * tileSize;
+        const tileY = Math.floor(y / tileSize) * tileSize;
+
+        if (tileY > 6000) return 'forest';
+
         const scale = 0.001;
-        const noise = Math.sin(x * scale) + Math.cos(y * scale);
+        const noise = Math.sin(tileX * scale) + Math.cos(tileY * scale);
+
         if (noise > 0.8) return 'lake';
         return 'meadow';
     }
