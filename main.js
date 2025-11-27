@@ -1,17 +1,25 @@
-height: window.innerHeight,
+import Phaser from 'phaser';
+import LobbyScene from './LobbyScene';
+import GameScene from './game';
+
+// Main Entry Point
+const config = {
+    type: Phaser.AUTO,
+    width: window.innerWidth,
+    height: window.innerHeight,
     backgroundColor: '#2d2d2d',
-        parent: 'app',
-            dom: {
-    createContainer: true
-},
-physics: {
+    parent: 'app',
+    dom: {
+        createContainer: true
+    },
+    physics: {
         default: 'arcade',
         arcade: {
-        gravity: { y: 0 },
-        debug: false
-    }
-},
-scene: [LobbyScene, GameScene]
+            gravity: { y: 0 },
+            debug: false
+        }
+    },
+    scene: [LobbyScene, GameScene]
 };
 
 const game = new Phaser.Game(config);
