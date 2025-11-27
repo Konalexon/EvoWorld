@@ -37,7 +37,7 @@ This isn't just a game; it's a simulation of ruthless natural selection.
 *   **High Risk, High Reward**: Lower max health, but higher damage output.
 *   **Apex Potential**: Evolve into the *Venus Flytrap* to dominate the food chain.
 
-### � For the Guardian (The Tree)
+### 🟢 For the Guardian (The Tree)
 *   **Defensive Playstyle**: Built for players who prefer sustainability and control.
 *   **Sustainability**: Use **Photosynthesis** to heal and tank damage.
 *   **Territory Control**: dominate an area by outlasting your opponents.
@@ -88,19 +88,21 @@ I am constantly working on this project. Here is the master plan for **EvoWorld*
 *   **Thirst System**: Water mechanics.
 *   **Active Abilities**: Dash & Heal.
 
-### 🌪️ Phase 4: Weather & Atmosphere (Current)
+### ✅ Phase 4: Weather & Atmosphere (Completed)
 *   **Rainstorms**: Random events that refill water bars globally.
 *   **Fog of War**: Reduced visibility in the Dark Forest.
 *   **Day/Night Cycle**: Night brings dangerous mobs.
 
-### 🌋 Phase 5: Extreme Biomes
+### ✅ Phase 5: Extreme Biomes (Not-Fully-Completed)
 *   **The Desert**: Sandstorms and rapid dehydration. New **Cactus** path.
 *   **The Arctic**: Snow and freezing mechanics. New **Pine** path.
 *   **The Volcano**: Lava pools and burn damage. New **Fire Flower** path.
 
-### 👑 Phase 6: Apex Predators (Bosses)
-*   **The Gardener**: AI Boss spawning every 15 mins. Drops massive XP.
-*   **Locust Swarm**: Event-based mob clouds that devour biomes.
+### ✅ Phase 6: Visual Overhaul & Polish (Not-Fully-Completed)
+*   **Organic World Generation**: Noise-based biome blending for natural terrain.
+*   **High-Fidelity Assets**: Custom generated textures for Sand, Snow, and Lava.
+*   **Environmental Decorations**: Pseudo-3D obstacles (Cacti, Rocks, Trees) that blend with the terrain.
+*   **Particle Effects**: Volcano smoke and atmospheric details.
 
 ### ✨ Phase 7: Rare Genetics
 *   **Golden Seed**: 1/1000 chance to spawn with 2x XP gain.
