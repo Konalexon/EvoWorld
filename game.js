@@ -102,7 +102,29 @@ export default class GameScene extends Phaser.Scene {
 
         // Input
         this.input.keyboard.on('keydown-SPACE', this.useAbility, this);
-        // 2. Thirst Decay & Weather & Atmosphere
+    }
+
+    update(time, delta) {
+        if (this.isEvolving) return;
+
+        // 1. Player Movement
+        const pointer = this.input.activePointer;
+        const worldPoint = pointer.positionToCamera(this.cameras.main);
+
+        const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, worldPoint.x, worldPoint.y);
+        const speed = Math.max(100, 300 - (this.playerStats.size * 20));
+
+        if (dist > 10) {
+            const dx = worldPoint.x - this.player.x;
+            const dy = worldPoint.y - this.player.y;
+            const vx = (dx / dist) * speed;
+            const vy = (dy / dist) * speed;
+            this.player.setVelocity(vx, vy);
+            this.player.setRotation(Phaser.Math.Angle.Between(this.player.x, this.player.y, worldPoint.x, worldPoint.y));
+        } else {
+            this.player.setVelocity(0);
+        }
+        this.nameTag.setPosition(this.player.x, this.player.y - (40 * this.player.scale));
         this.playerStats.water -= (delta / 1000) * 2;
         this.updateWeather(delta);
         this.updateAtmosphere(delta);
