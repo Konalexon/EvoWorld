@@ -47,11 +47,14 @@ This isn't just a game; it's a simulation of ruthless natural selection.
 
 ## 📸 Visual Gallery
 
-### The Evolution UI
-SCREENSHOTS
+### MainMenu
+![MainMenu](public/assets/screenshots/main_menu.jpg)
 
-### The Dark Forest
-SCREENSHOTS
+### MiniMap
+![MiniMap](public/assets/screenshots/minimap.png)
+
+### Map
+![Gameplay](public/assets/screenshots/gameplay.png)
 
 ---
 
@@ -73,57 +76,61 @@ SCREENSHOTS
 
 I am constantly working on this project. Here is the master plan for **EvoWorld**:
 
-### ✅ Phase 1: Foundation (Completed)
-*   Core Game Loop (Eat, Grow, Die).
-*   Basic Evolution System.
-*   Resource Spawning.
+### [✅] Phase 1: Foundation (Completed)
+*   [x] ***Core Game Loop (Eat, Grow, Die).***
+*   [x] ***Basic Evolution System.***
+*   [x] ***Resource Spawning.***
 
-### ✅ Phase 2: The Split (Completed)
-*   **Path Selection**: Evil vs Peace.
-*   **Bot AI**: Intelligent resource gathering.
-*   **UI Overhaul**: XP Bars, Leaderboards.
+### [✅] Phase 2: The Split (Completed)
+*   [x] **Path Selection**: Evil vs Peace.
+*   [x] **Bot AI**: Intelligent resource gathering.
+*   [x] **UI Overhaul**: XP Bars, Leaderboards.
 
-### ✅ Phase 3: Expansion (Completed)
-*   **Biomes**: Meadow, Dark Forest, Lake.
-*   **Thirst System**: Water mechanics.
-*   **Active Abilities**: Dash & Heal.
+### [✅] Phase 3: Expansion (Completed)
+*   [x] **Biomes**: Meadow, Dark Forest, Water(Lakes).
+*   [x] **Thirst System**: Water mechanics.
+*   [x] **Active Abilities**: Dash & Heal.
 
-### ✅ Phase 4: Weather & Atmosphere (Completed)
-*   **Rainstorms**: Random events that refill water bars globally.
-*   **Fog of War**: Reduced visibility in the Dark Forest.
-*   **Day/Night Cycle**: Night brings dangerous mobs.
+### [✅] Phase 4: Weather & Atmosphere (Completed)
+*   [x] **Rainstorms**: Random events that refill water bars globally.
+*   [x] **Fog of War**: Reduced visibility in the Dark Forest.
+*   [x] **Day/Night Cycle**: Night brings dangerous mobs.
 
-### ✅ Phase 5: Extreme Biomes (Not-Fully-Completed)
-*   **The Desert**: Sandstorms and rapid dehydration. New **Cactus** path.
-*   **The Arctic**: Snow and freezing mechanics. New **Pine** path.
-*   **The Volcano**: Lava pools and burn damage. New **Fire Flower** path.
+### [✅] Phase 5: Extreme Biomes (Not-Fully-Completed)
+*   [?] **The Desert**: Sandstorms and rapid dehydration. New **Cactus** path.
+*   [?] **The Arctic**: Snow and freezing mechanics. New **Pine** path.
+*   [?] **The Volcano**: Lava pools and burn damage. New **Fire Flower** path.
 
-### ✅ Phase 6: Visual Overhaul & Polish (Not-Fully-Completed)
-*   **Organic World Generation**: Noise-based biome blending for natural terrain.
-*   **High-Fidelity Assets**: Custom generated textures for Sand, Snow, and Lava.
-*   **Environmental Decorations**: Pseudo-3D obstacles (Cacti, Rocks, Trees) that blend with the terrain.
-*   **Particle Effects**: Volcano smoke and atmospheric details.
+### [✅] Phase 6: Visual Overhaul & Polish (Not-Fully-Completed)
+*   [?] **Organic World Generation**: Noise-based biome blending for natural terrain.
+*   [x]**High-Fidelity Assets**: Custom generated textures for Sand, Snow, and Lava.
+*   [?]**Environmental Decorations**: Pseudo-3D obstacles (Cacti, Rocks, Trees) that blend with the terrain.
+*   [x]**Particle Effects**: Volcano smoke and atmospheric details.
 
-### ✨ Phase 7: Rare Genetics
-*   **Golden Seed**: 1/1000 chance to spawn with 2x XP gain.
-*   **Crystal Variants**: Rare, shiny skin variants with slight defense boost.
+### [✅] Phase 7: Rare Genetics (Completed)
+*   [x]**Golden Seed**: 1/1000 chance to spawn with 2x XP gain.
+*   [x]**Crystal Variants**: Rare, shiny skin variants with slight defense boost.
+*   [x]**Hard Resources**: Purple resources that require multiple hits and give high XP.
+*   [x]**Movement Mechanics**: Smooth mouse-following movement with biome speed modifiers.
 
-### 🧬 Phase 8: Mutation System
-*   **DNA Points**: Earn points by leveling up.
-*   **Skill Tree**: Unlock passive buffs (Speed, Health, Regen).
-*   **Specializations**: Unique perks for Carnivores and Trees.
+### [✅] Phase 8: Mutation System (Completed)
+*   [x]**DNA Points**: Earn points by leveling up.
+*   [x]**Skill Tree**: Unlock passive buffs (Speed, Health, Regen).
+*   [x]**Specializations**: Unique perks for Carnivores and Trees.
+*   [x]**Lava Damage**: Periodic damage when entering the Volcano biome.
+*   [x]**HP System**: Visual HP bars for all entities and health management.
 
 ### 🏰 Phase 9: Base Building
-*   **Root Network**: Fast travel tunnels for Trees.
-*   **Thorn Nests**: Traps and territory control for Carnivores.
+*   [ ]**Root Network**: Fast travel tunnels for Trees.
+*   [ ]**Thorn Nests**: Traps and territory control for Carnivores.
 
 ### ☄️ Phase 10: Cataclysms
-*   **Forest Fire**: Spreads dynamically from the Volcano.
-*   **The Flood**: Lakes expand, turning the map into an ocean.
+*   [ ]**Forest Fire**: Spreads dynamically from the Volcano.
+*   [ ]**The Flood**: Lakes expand, turning the map into an ocean.
 
 ### 🌐 Phase 11: Multiplayer
-*   **Global Servers**: Play with hundreds of players.
-*   **Clans**: Team up and dominate the leaderboard.
+*   [ ]**Global Servers**: Play with hundreds of players.
+*   [ ]**Clans**: Team up and dominate the leaderboard.
 
 ---
 
