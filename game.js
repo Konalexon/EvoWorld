@@ -15,6 +15,7 @@ export default class GameScene extends Phaser.Scene {
         this.load.image('forest', '/assets/forest.png');
         this.load.image('lake', '/assets/lake.png');
         this.load.image('volcano', '/assets/volcano.png');
+        // Cactus image loaded but not used for obstacles anymore
         this.load.image('cactus', '/assets/cactus.png');
 
         this.load.svg('sun', '/assets/sun.svg', { width: 64, height: 64 });
@@ -43,9 +44,9 @@ export default class GameScene extends Phaser.Scene {
             this.physics.world.setBounds(0, 0, this.MAP_WIDTH, this.MAP_HEIGHT);
             this.createBiomes();
 
-            // 2. Decorations
-            this.obstacles = this.physics.add.staticGroup();
-            this.decorateBiomes();
+            // 2. Decorations - REMOVED per user request
+            // this.obstacles = this.physics.add.staticGroup();
+            // this.decorateBiomes();
 
             // Volcano Feature
             // Add a base that matches the lava terrain to help blending
@@ -124,8 +125,7 @@ export default class GameScene extends Phaser.Scene {
             this.physics.add.overlap(this.bots, this.soils, this.botEatResource, null, this);
             this.physics.add.collider(this.player, this.bots, this.handleCombat, null, this);
             this.physics.add.collider(this.bots, this.bots, this.handleBotCombat, null, this);
-            this.physics.add.collider(this.player, this.obstacles);
-            this.physics.add.collider(this.bots, this.obstacles);
+            // Obstacle collisions removed
 
             // 8. UI
             this.createUI();
@@ -193,27 +193,6 @@ export default class GameScene extends Phaser.Scene {
             blendMode: 'NORMAL'
         });
         particles.setDepth(20);
-    }
-
-    decorateBiomes() {
-        for (let i = 0; i < 200; i++) {
-            const x = Phaser.Math.Between(0, this.MAP_WIDTH);
-            const y = Phaser.Math.Between(0, this.MAP_HEIGHT);
-            const biome = this.getBiome(x, y);
-
-            if (biome === 'sand') {
-                const cactus = this.obstacles.create(x, y, 'cactus').setScale(0.6).setDepth(5);
-                cactus.body.setSize(cactus.width * 0.4, cactus.height * 0.4);
-                cactus.body.setOffset(cactus.width * 0.3, cactus.height * 0.5);
-            } else if (biome === 'forest') {
-                const tree = this.obstacles.create(x, y, 'tree').setScale(1.2).setDepth(5).setTint(0x555555);
-                tree.body.setSize(tree.width * 0.3, tree.height * 0.3);
-                tree.body.setOffset(tree.width * 0.35, tree.height * 0.6);
-            } else if (biome === 'snow') {
-                const rock = this.obstacles.create(x, y, 'soil').setScale(1.5).setDepth(5).setTint(0xEEEEEE);
-                rock.body.setCircle(20);
-            }
-        }
     }
 
     update(time, delta) {
@@ -307,10 +286,10 @@ export default class GameScene extends Phaser.Scene {
         // Player HP Bar
         const p = this.player;
         const pStats = this.playerStats;
-        const width = 60 * p.scale;
+        const width = 100 * p.scale; // Increased width
         const height = 8;
         const x = p.x - width / 2;
-        const y = p.y - (50 * p.scale);
+        const y = p.y - (60 * p.scale); // Adjusted Y
 
         // Background
         this.hpBars.fillStyle(0x000000);
@@ -326,7 +305,7 @@ export default class GameScene extends Phaser.Scene {
             if (!bot.active) return;
             const bStats = bot.getData('stats');
             const bx = bot.x - width / 2;
-            const by = bot.y - (50 * bot.scale);
+            const by = bot.y - (60 * bot.scale); // Adjusted Y
 
             this.hpBars.fillStyle(0x000000);
             this.hpBars.fillRect(bx, by, width, height);
@@ -745,6 +724,12 @@ export default class GameScene extends Phaser.Scene {
     handleResourceEat(player, res, type) {
         // Hard Resource Logic
         if (res.getData('isHard')) {
+            const now = this.time.now;
+            const lastHit = res.getData('lastHit') || 0;
+
+            if (now - lastHit < 500) return; // 500ms cooldown
+            res.setData('lastHit', now);
+
             let hp = res.getData('hp');
             hp--;
             res.setData('hp', hp);
@@ -752,13 +737,12 @@ export default class GameScene extends Phaser.Scene {
 
             // Pushback
             const angle = Phaser.Math.Angle.Between(player.x, player.y, res.x, res.y);
-            player.setVelocity(Math.cos(angle + Math.PI) * 200, Math.sin(angle + Math.PI) * 200);
+            player.setVelocity(Math.cos(angle + Math.PI) * 400, Math.sin(angle + Math.PI) * 400); // Stronger pushback
 
             if (hp <= 0) {
                 res.disableBody(true, true);
-                this.gainXP(25); // Big XP
-                // Spawn goodies? For now just big XP.
-                const txt = this.add.text(res.x, res.y, '+25 XP!', { fontSize: '24px', fill: '#ff00ff', stroke: '#fff', strokeThickness: 2 }).setDepth(50);
+                this.gainXP(50); // Big XP (Increased to 50)
+                const txt = this.add.text(res.x, res.y, '+50 XP!', { fontSize: '24px', fill: '#ff00ff', stroke: '#fff', strokeThickness: 2 }).setDepth(50);
                 this.tweens.add({ targets: txt, y: res.y - 50, alpha: 0, duration: 1000, onComplete: () => txt.destroy() });
             }
             return;
