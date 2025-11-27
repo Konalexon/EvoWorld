@@ -31,12 +31,17 @@ export default class GameScene extends Phaser.Scene {
             this.MAP_WIDTH = 8000;
             this.MAP_HEIGHT = 8000;
 
+            // Generate Biome Textures programmatically
+            this.createTexture('sand', 0xE6C288);
+            this.createTexture('snow', 0xE0F7FA);
+            this.createTexture('lava', 0x3E2723);
+
             // 1. Map & Biomes
             this.physics.world.setBounds(0, 0, this.MAP_WIDTH, this.MAP_HEIGHT);
             this.createBiomes();
 
             // 2. Player
-            this.player = this.physics.add.sprite(this.MAP_WIDTH / 2, this.MAP_HEIGHT / 2, 'seed');
+            this.player = this.physics.add.sprite(2000, 2000, 'seed'); // Start in Meadow
             this.player.setCollideWorldBounds(true);
             this.player.setScale(0.5);
             this.player.setDepth(10);
@@ -49,6 +54,7 @@ export default class GameScene extends Phaser.Scene {
 
             this.isEvolving = false;
             this.lastCombatTime = 0;
+            this.lastDamageTime = 0;
 
             // Weather & Atmosphere
             this.weather = 'clear';
@@ -98,6 +104,15 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
+    createTexture(key, color) {
+        if (!this.textures.exists(key)) {
+            const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+            graphics.fillStyle(color, 1);
+            graphics.fillRect(0, 0, 512, 512);
+            graphics.generateTexture(key, 512, 512);
+        }
+    }
+
     update(time, delta) {
         try {
             if (this.isEvolving) return;
@@ -109,10 +124,16 @@ export default class GameScene extends Phaser.Scene {
             const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, worldPoint.x, worldPoint.y);
             let speed = Math.max(100, 300 - (this.playerStats.size * 20));
 
-            // Water Slowdown
+            // Biome Mechanics
             const biome = this.getBiome(this.player.x, this.player.y);
+
+            // Water Slowdown
             if (biome === 'lake' && this.playerStats.form !== 'water_spirit') {
                 speed *= 0.75;
+            }
+            // Snow Slowdown
+            if (biome === 'snow' && this.playerStats.form !== 'yeti') {
+                speed *= 0.7;
             }
 
             if (dist > 10) {
@@ -128,7 +149,21 @@ export default class GameScene extends Phaser.Scene {
             this.nameTag.setPosition(this.player.x, this.player.y - (40 * this.player.scale));
 
             // 2. Thirst Decay & Weather & Atmosphere
-            this.playerStats.water -= (delta / 1000) * 2;
+            let thirstRate = 2;
+            if (biome === 'sand') thirstRate = 4; // Desert thirst
+
+            this.playerStats.water -= (delta / 1000) * thirstRate;
+
+            // Lava Damage
+            if (biome === 'lava') {
+                if (time > this.lastDamageTime + 1000) {
+                    this.playerStats.hp -= 5;
+                    this.player.setTint(0xff0000);
+                    this.time.delayedCall(200, () => this.player.clearTint());
+                    this.lastDamageTime = time;
+                }
+            }
+
             this.updateWeather(delta);
             this.updateAtmosphere(delta);
 
@@ -151,26 +186,31 @@ export default class GameScene extends Phaser.Scene {
     }
 
     getBiome(x, y) {
-        // Snap coordinates to tile grid (512x512) to match visual generation
         const tileSize = 512;
         const tileX = Math.floor(x / tileSize) * tileSize;
         const tileY = Math.floor(y / tileSize) * tileSize;
 
-        if (tileY > 6000) return 'forest';
+        const isRight = tileX >= 4000;
+        const isBottom = tileY >= 4000;
 
-        const scale = 0.001;
-        const noise = Math.sin(tileX * scale) + Math.cos(tileY * scale);
-
-        if (noise > 0.8) return 'lake';
-        return 'meadow';
+        if (!isRight && !isBottom) {
+            const scale = 0.001;
+            const noise = Math.sin(tileX * scale) + Math.cos(tileY * scale);
+            if (noise > 0.8) return 'lake';
+            return 'meadow';
+        } else if (isRight && !isBottom) {
+            return 'sand';
+        } else if (!isRight && isBottom) {
+            return 'snow';
+        } else {
+            return 'lava';
+        }
     }
 
     createAtmosphere() {
-        // 1. Day/Night Overlay - Huge size
         this.dayNightOverlay = this.add.rectangle(window.innerWidth / 2, window.innerHeight / 2, 10000, 10000, 0x000044)
             .setScrollFactor(0).setDepth(150).setAlpha(0).setBlendMode(Phaser.BlendModes.MULTIPLY);
 
-        // 2. Fog of War (Dark Forest)
         if (!this.textures.exists('vignette')) {
             const graphics = this.make.graphics({ x: 0, y: 0, add: false });
             graphics.fillStyle(0x000000, 1);
@@ -209,7 +249,6 @@ export default class GameScene extends Phaser.Scene {
     }
 
     updateAtmosphere(delta) {
-        // Day/Night
         this.dayTime += delta / 1000;
         if (this.dayTime > 300) this.dayTime = 0;
         let targetAlpha = 0;
@@ -219,11 +258,9 @@ export default class GameScene extends Phaser.Scene {
         }
         if (this.dayNightOverlay) this.dayNightOverlay.setAlpha(targetAlpha);
 
-        // Fog
-        const forestStart = 6000;
-        const deepForest = 7500;
-        if (this.player.y > forestStart) {
-            const fogAlpha = Math.min(0.5, (this.player.y - forestStart) / (deepForest - forestStart));
+        const isLava = this.player.x >= 4000 && this.player.y >= 4000;
+        if (isLava) {
+            const fogAlpha = 0.4;
             if (this.fogOverlay) this.fogOverlay.setAlpha(fogAlpha);
         } else {
             if (this.fogOverlay) this.fogOverlay.setAlpha(0);
@@ -263,13 +300,23 @@ export default class GameScene extends Phaser.Scene {
             for (let x = 0; x < cols; x++) {
                 const posX = x * tileSize;
                 const posY = y * tileSize;
+
                 let texture = 'meadow';
-                if (posY > 6000) texture = 'forest';
-                else {
+                const isRight = posX >= 4000;
+                const isBottom = posY >= 4000;
+
+                if (!isRight && !isBottom) {
                     const scale = 0.001;
                     const noise = Math.sin(posX * scale) + Math.cos(posY * scale);
                     if (noise > 0.8) texture = 'lake';
+                } else if (isRight && !isBottom) {
+                    texture = 'sand';
+                } else if (!isRight && isBottom) {
+                    texture = 'snow';
+                } else {
+                    texture = 'lava';
                 }
+
                 this.add.image(posX, posY, texture).setOrigin(0).setDisplaySize(tileSize, tileSize).setDepth(0);
             }
         }
@@ -324,13 +371,23 @@ export default class GameScene extends Phaser.Scene {
             for (let x = 0; x < cols; x++) {
                 const posX = x * tileSize;
                 const posY = y * tileSize;
+
                 let color = 0x4CAF50;
-                if (posY > 6000) color = 0x1B5E20;
-                else {
+                const isRight = posX >= 4000;
+                const isBottom = posY >= 4000;
+
+                if (!isRight && !isBottom) {
                     const scale = 0.001;
                     const noise = Math.sin(posX * scale) + Math.cos(posY * scale);
                     if (noise > 0.8) color = 0x2196F3;
+                } else if (isRight && !isBottom) {
+                    color = 0xE6C288;
+                } else if (!isRight && isBottom) {
+                    color = 0xE0F7FA;
+                } else {
+                    color = 0x3E2723;
                 }
+
                 this.minimapBg.fillStyle(color);
                 this.minimapBg.fillRect(ox + (posX * mapScale), oy + (posY * mapScale), Math.ceil(tileSize * mapScale), Math.ceil(tileSize * mapScale));
             }
