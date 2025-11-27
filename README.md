@@ -106,11 +106,12 @@ I am constantly working on this project. Here is the master plan for **EvoWorld*
 
 ### ✨ Phase 7: Rare Genetics
 *   **Golden Seed**: 1/1000 chance to spawn with 2x XP gain.
-*   **Albino Variants**: Camouflage bonuses in specific biomes.
+*   **Crystal Variants**: Rare, shiny skin variants with slight defense boost.
 
-### 🐣 Phase 8: Minion System
-*   **Saplings**: Small AI followers that collect food.
-*   **Pollination**: Buff nearby allies (Peace path).
+### 🧬 Phase 8: Mutation System
+*   **DNA Points**: Earn points by leveling up.
+*   **Skill Tree**: Unlock passive buffs (Speed, Health, Regen).
+*   **Specializations**: Unique perks for Carnivores and Trees.
 
 ### 🏰 Phase 9: Base Building
 *   **Root Network**: Fast travel tunnels for Trees.
