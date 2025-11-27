@@ -14,7 +14,8 @@ export default class GameScene extends Phaser.Scene {
         this.load.image('meadow', '/assets/meadow.png');
         this.load.image('forest', '/assets/forest.png');
         this.load.image('lake', '/assets/lake.png');
-        this.load.image('volcano', '/assets/volcano.png'); // Load the new volcano image
+        this.load.image('volcano', '/assets/volcano.png');
+        this.load.image('cactus', '/assets/cactus.png');
 
         this.load.svg('sun', '/assets/sun.svg', { width: 64, height: 64 });
         this.load.svg('carnivore', '/assets/carnivore.svg', { width: 128, height: 128 });
@@ -32,7 +33,7 @@ export default class GameScene extends Phaser.Scene {
             this.MAP_WIDTH = 8000;
             this.MAP_HEIGHT = 8000;
 
-            // Generate Biome Textures programmatically (fallback/enhancement)
+            // Generate Biome Textures programmatically
             this.createPatternTexture('sand', 0xE6C288, 0xD4B470);
             this.createPatternTexture('snow', 0xE0F7FA, 0xB2EBF2);
             this.createPatternTexture('lava', 0x3E2723, 0xFF5722);
@@ -42,29 +43,44 @@ export default class GameScene extends Phaser.Scene {
             this.physics.world.setBounds(0, 0, this.MAP_WIDTH, this.MAP_HEIGHT);
             this.createBiomes();
 
-            // Volcano Feature (Center of Lava Biome)
-            // Lava is at X < 2000. Center roughly 1000, 4000? 
-            // Based on getBiome: Lava is closest to (0, 4000).
-            // Let's place it at (1000, 4000) to be visible.
-            this.volcano = this.add.image(1000, 4000, 'volcano').setDepth(1).setScale(2);
-            // Add smoke particles for the volcano
+            // 2. Decorations
+            this.obstacles = this.physics.add.staticGroup();
+            this.decorateBiomes();
+
+            // Volcano Feature
+            // Add a base that matches the lava terrain to help blending
+            this.add.image(1000, 4000, 'lava').setDepth(1).setScale(3).setAlpha(1);
+            this.volcano = this.add.image(1000, 4000, 'volcano').setDepth(2).setScale(2);
             this.createVolcanoSmoke(1000, 4000);
 
-            // 2. Player
+            // 3. Player
             this.player = this.physics.add.sprite(4000, 4000, 'seed'); // Start in Center (Meadow)
             this.player.setCollideWorldBounds(true);
             this.player.setScale(0.5);
             this.player.setDepth(10);
 
-            // Stats
+            // Stats & Genetics
+            const variantRoll = Math.random();
+            let variant = 'normal';
+            if (variantRoll < 0.01) variant = 'golden'; // 1% Golden
+            else if (variantRoll < 0.05) variant = 'crystal'; // 4% Crystal
+
             this.playerStats = {
                 size: 1, xp: 0, nextLevelXP: 300, hp: 100, maxHp: 100,
-                water: 100, maxWater: 100, form: 'seed', path: null
+                water: 100, maxWater: 100, form: 'seed', path: null,
+                variant: variant,
+                dna: 0, // Mutation Points
+                mutations: { speed: 0, health: 0, regen: 0 }
             };
+
+            // Apply Visuals for Variant
+            if (variant === 'golden') this.player.setTint(0xFFD700);
+            if (variant === 'crystal') this.player.setTint(0x00FFFF);
 
             this.isEvolving = false;
             this.lastCombatTime = 0;
             this.lastDamageTime = 0;
+            this.regenTimer = 0;
 
             // Weather & Atmosphere
             this.weather = 'clear';
@@ -74,25 +90,32 @@ export default class GameScene extends Phaser.Scene {
             this.createAtmosphere();
 
             // Name Tag
-            this.nameTag = this.add.text(this.player.x, this.player.y - 40, this.nickname, {
+            let nameText = this.nickname;
+            if (variant === 'golden') nameText = '✨ ' + nameText;
+            if (variant === 'crystal') nameText = '💎 ' + nameText;
+
+            this.nameTag = this.add.text(this.player.x, this.player.y - 40, nameText, {
                 fontSize: '14px', fill: '#fff', stroke: '#000', strokeThickness: 3, fontFamily: 'Arial'
             }).setOrigin(0.5).setDepth(11);
 
-            // 3. Camera
+            // HP Bar Graphics
+            this.hpBars = this.add.graphics().setDepth(12);
+
+            // 4. Camera
             this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
             this.cameras.main.setZoom(1);
 
-            // 4. Resources
+            // 5. Resources
             this.waters = this.physics.add.group();
             this.suns = this.physics.add.group();
             this.soils = this.physics.add.group();
-            this.spawnResources(600);
+            this.spawnResources(800); // Increased resource count
 
-            // 5. Bots
+            // 6. Bots
             this.bots = this.physics.add.group();
             this.createBots(15);
 
-            // 6. Collisions
+            // 7. Collisions
             this.physics.add.overlap(this.player, this.waters, this.eatWater, null, this);
             this.physics.add.overlap(this.player, this.suns, this.eatSun, null, this);
             this.physics.add.overlap(this.player, this.soils, this.eatSoil, null, this);
@@ -101,13 +124,22 @@ export default class GameScene extends Phaser.Scene {
             this.physics.add.overlap(this.bots, this.soils, this.botEatResource, null, this);
             this.physics.add.collider(this.player, this.bots, this.handleCombat, null, this);
             this.physics.add.collider(this.bots, this.bots, this.handleBotCombat, null, this);
+            this.physics.add.collider(this.player, this.obstacles);
+            this.physics.add.collider(this.bots, this.obstacles);
 
-            // 7. UI
+            // 8. UI
             this.createUI();
+            this.createMutationUI(); // New Mutation UI
             this.createMinimap();
 
             // Input
             this.input.keyboard.on('keydown-SPACE', this.useAbility, this);
+
+            // Fix M key: Use KeyCodes directly for reliability
+            this.input.keyboard.on('keydown-M', () => {
+                console.log('M pressed');
+                this.toggleMutationMenu();
+            });
         } catch (e) {
             console.error(e);
             alert('Error in create: ' + e.message);
@@ -163,6 +195,27 @@ export default class GameScene extends Phaser.Scene {
         particles.setDepth(20);
     }
 
+    decorateBiomes() {
+        for (let i = 0; i < 200; i++) {
+            const x = Phaser.Math.Between(0, this.MAP_WIDTH);
+            const y = Phaser.Math.Between(0, this.MAP_HEIGHT);
+            const biome = this.getBiome(x, y);
+
+            if (biome === 'sand') {
+                const cactus = this.obstacles.create(x, y, 'cactus').setScale(0.6).setDepth(5);
+                cactus.body.setSize(cactus.width * 0.4, cactus.height * 0.4);
+                cactus.body.setOffset(cactus.width * 0.3, cactus.height * 0.5);
+            } else if (biome === 'forest') {
+                const tree = this.obstacles.create(x, y, 'tree').setScale(1.2).setDepth(5).setTint(0x555555);
+                tree.body.setSize(tree.width * 0.3, tree.height * 0.3);
+                tree.body.setOffset(tree.width * 0.35, tree.height * 0.6);
+            } else if (biome === 'snow') {
+                const rock = this.obstacles.create(x, y, 'soil').setScale(1.5).setDepth(5).setTint(0xEEEEEE);
+                rock.body.setCircle(20);
+            }
+        }
+    }
+
     update(time, delta) {
         try {
             if (this.isEvolving) return;
@@ -172,19 +225,17 @@ export default class GameScene extends Phaser.Scene {
             const worldPoint = pointer.positionToCamera(this.cameras.main);
 
             const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, worldPoint.x, worldPoint.y);
-            let speed = Math.max(100, 300 - (this.playerStats.size * 20));
+
+            // Speed Calculation (Base + Mutation)
+            let baseSpeed = Math.max(100, 300 - (this.playerStats.size * 20));
+            let speedMultiplier = 1 + (this.playerStats.mutations.speed * 0.05); // +5% per level
+            let speed = baseSpeed * speedMultiplier;
 
             // Biome Mechanics
             const biome = this.getBiome(this.player.x, this.player.y);
 
-            // Water Slowdown
-            if (biome === 'lake' && this.playerStats.form !== 'water_spirit') {
-                speed *= 0.75;
-            }
-            // Snow Slowdown
-            if (biome === 'snow' && this.playerStats.form !== 'yeti') {
-                speed *= 0.7;
-            }
+            if (biome === 'lake' && this.playerStats.form !== 'water_spirit') speed *= 0.75;
+            if (biome === 'snow' && this.playerStats.form !== 'yeti') speed *= 0.7;
 
             if (dist > 10) {
                 const dx = worldPoint.x - this.player.x;
@@ -198,24 +249,39 @@ export default class GameScene extends Phaser.Scene {
             }
             this.nameTag.setPosition(this.player.x, this.player.y - (40 * this.player.scale));
 
-            // 2. Thirst Decay & Weather & Atmosphere
+            // 2. Thirst & Regen
             let thirstRate = 2;
-            if (biome === 'sand') thirstRate = 4; // Desert thirst
-
+            if (biome === 'sand') thirstRate = 3; // Reduced from 4 to 3
             this.playerStats.water -= (delta / 1000) * thirstRate;
 
-            // Lava Damage
+            // Passive Regen (Mutation)
+            if (this.playerStats.mutations.regen > 0) {
+                this.regenTimer += delta;
+                if (this.regenTimer > 1000) {
+                    this.regenTimer = 0;
+                    const regenAmount = this.playerStats.mutations.regen * 0.5; // 0.5 HP per level per sec
+                    this.playerStats.hp = Math.min(this.playerStats.maxHp, this.playerStats.hp + regenAmount);
+                }
+            }
+
+            // Lava Damage (Reduced frequency)
             if (biome === 'lava') {
-                if (time > this.lastDamageTime + 1000) {
+                if (time > this.lastDamageTime + 2000) { // Increased from 1000 to 2000
                     this.playerStats.hp -= 5;
                     this.player.setTint(0xff0000);
-                    this.time.delayedCall(200, () => this.player.clearTint());
+                    this.time.delayedCall(200, () => {
+                        // Restore variant tint
+                        if (this.playerStats.variant === 'golden') this.player.setTint(0xFFD700);
+                        else if (this.playerStats.variant === 'crystal') this.player.setTint(0x00FFFF);
+                        else this.player.clearTint();
+                    });
                     this.lastDamageTime = time;
                 }
             }
 
             this.updateWeather(delta);
             this.updateAtmosphere(delta);
+            this.updateHPBars(); // Draw HP Bars
 
             if (this.playerStats.water <= 0) {
                 this.playerStats.water = 0;
@@ -235,39 +301,69 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
+    updateHPBars() {
+        this.hpBars.clear();
+
+        // Player HP Bar
+        const p = this.player;
+        const pStats = this.playerStats;
+        const width = 60 * p.scale;
+        const height = 8;
+        const x = p.x - width / 2;
+        const y = p.y - (50 * p.scale);
+
+        // Background
+        this.hpBars.fillStyle(0x000000);
+        this.hpBars.fillRect(x, y, width, height);
+
+        // Health
+        const hpPercent = Math.max(0, pStats.hp / pStats.maxHp);
+        this.hpBars.fillStyle(0x00ff00);
+        this.hpBars.fillRect(x, y, width * hpPercent, height);
+
+        // Bots HP Bars
+        this.bots.getChildren().forEach(bot => {
+            if (!bot.active) return;
+            const bStats = bot.getData('stats');
+            const bx = bot.x - width / 2;
+            const by = bot.y - (50 * bot.scale);
+
+            this.hpBars.fillStyle(0x000000);
+            this.hpBars.fillRect(bx, by, width, height);
+
+            const bHpPercent = Math.max(0, bStats.hp / bStats.maxHp);
+            this.hpBars.fillStyle(0xff0000); // Red for enemies
+            this.hpBars.fillRect(bx, by, width * bHpPercent, height);
+        });
+    }
+
     getBiome(x, y) {
         const tileSize = 512;
         const tileX = Math.floor(x / tileSize) * tileSize;
         const tileY = Math.floor(y / tileSize) * tileSize;
 
-        // Organic Layout using Distance Blending
         const scale = 0.0005;
-        const noise = Math.sin(tileX * scale) + Math.cos(tileY * scale); // -2 to 2
+        const noise = Math.sin(tileX * scale) + Math.cos(tileY * scale);
 
-        // Distances to poles
         const dSnow = Phaser.Math.Distance.Between(tileX, tileY, 4000, 0) + (noise * 500);
         const dForest = Phaser.Math.Distance.Between(tileX, tileY, 4000, 8000) + (noise * 500);
         const dLava = Phaser.Math.Distance.Between(tileX, tileY, 0, 4000) + (noise * 500);
         const dDesert = Phaser.Math.Distance.Between(tileX, tileY, 8000, 4000) + (noise * 500);
-        const dMeadow = Phaser.Math.Distance.Between(tileX, tileY, 4000, 4000); // Center is safe
+        const dMeadow = Phaser.Math.Distance.Between(tileX, tileY, 4000, 4000);
 
-        // Thresholds
         if (dMeadow < 2500) {
-            // Center Zone
             const lakeNoise = Math.sin(tileX * 0.002) + Math.cos(tileY * 0.002);
             if (lakeNoise > 1.2) return 'lake';
             return 'meadow';
         }
 
-        // Find closest edge biome
         const min = Math.min(dSnow, dForest, dLava, dDesert);
-
         if (min === dLava) return 'lava';
         if (min === dDesert) return 'sand';
         if (min === dSnow) return 'snow';
         if (min === dForest) return 'forest';
 
-        return 'meadow'; // Fallback
+        return 'meadow';
     }
 
     createAtmosphere() {
@@ -312,7 +408,6 @@ export default class GameScene extends Phaser.Scene {
     }
 
     updateAtmosphere(delta) {
-        // Day/Night
         this.dayTime += delta / 1000;
         if (this.dayTime > 300) this.dayTime = 0;
         let targetAlpha = 0;
@@ -322,7 +417,6 @@ export default class GameScene extends Phaser.Scene {
         }
         if (this.dayNightOverlay) this.dayNightOverlay.setAlpha(targetAlpha);
 
-        // Fog Logic: Dark Forest (Bottom)
         const biome = this.getBiome(this.player.x, this.player.y);
         if (biome === 'forest') {
             this.fogOverlay.setAlpha(0.5);
@@ -376,24 +470,28 @@ export default class GameScene extends Phaser.Scene {
     }
 
     createUI() {
+        // Bottom Center Layout
         const barWidth = 400;
-        const x = window.innerWidth / 2 - barWidth / 2;
+        const centerX = window.innerWidth / 2;
+        const bottomY = window.innerHeight - 80;
 
-        this.xpBarBg = this.add.rectangle(x, 20, barWidth, 15, 0x333333).setScrollFactor(0).setOrigin(0).setDepth(200);
-        this.xpBarFill = this.add.rectangle(x, 20, 0, 15, 0x00ff00).setScrollFactor(0).setOrigin(0).setDepth(201);
-        this.xpText = this.add.text(window.innerWidth / 2, 28, 'XP: 0 / 300', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(202);
+        this.formText = this.add.text(centerX, bottomY - 40, 'Form: SEED', {
+            fontSize: '24px', fill: '#ffd700', stroke: '#000', strokeThickness: 4, fontStyle: 'bold'
+        }).setScrollFactor(0).setOrigin(0.5).setDepth(200);
 
-        this.waterBarBg = this.add.rectangle(x, 40, barWidth, 15, 0x333333).setScrollFactor(0).setOrigin(0).setDepth(200);
-        this.waterBarFill = this.add.rectangle(x, 40, barWidth, 15, 0x2196F3).setScrollFactor(0).setOrigin(0).setDepth(201);
-        this.waterText = this.add.text(window.innerWidth / 2, 48, 'Water: 100%', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(202);
+        // XP Bar
+        this.xpBarBg = this.add.rectangle(centerX - barWidth / 2, bottomY, barWidth, 15, 0x333333).setScrollFactor(0).setOrigin(0).setDepth(200);
+        this.xpBarFill = this.add.rectangle(centerX - barWidth / 2, bottomY, 0, 15, 0x00ff00).setScrollFactor(0).setOrigin(0).setDepth(201);
+        this.xpText = this.add.text(centerX, bottomY + 8, 'XP: 0 / 300', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(202);
+
+        // Water Bar
+        this.waterBarBg = this.add.rectangle(centerX - barWidth / 2, bottomY + 20, barWidth, 15, 0x333333).setScrollFactor(0).setOrigin(0).setDepth(200);
+        this.waterBarFill = this.add.rectangle(centerX - barWidth / 2, bottomY + 20, barWidth, 15, 0x2196F3).setScrollFactor(0).setOrigin(0).setDepth(201);
+        this.waterText = this.add.text(centerX, bottomY + 28, 'Water: 100%', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(202);
 
         this.weatherText = this.add.text(window.innerWidth - 270, window.innerHeight - 300, 'Weather: CLEAR ☀️', {
             fontSize: '16px', fill: '#ffff00', fontStyle: 'bold', stroke: '#000', strokeThickness: 2
         }).setScrollFactor(0).setDepth(200);
-
-        this.formText = this.add.text(window.innerWidth / 2, window.innerHeight - 50, 'Form: SEED', {
-            fontSize: '24px', fill: '#ffd700', stroke: '#000', strokeThickness: 4, fontStyle: 'bold'
-        }).setScrollFactor(0).setOrigin(0.5).setDepth(200);
 
         const lbX = 20;
         const lbY = 100;
@@ -403,6 +501,65 @@ export default class GameScene extends Phaser.Scene {
         this.leaderboardEntries = [];
         for (let i = 0; i < 10; i++) {
             this.leaderboardEntries.push(this.add.text(lbX + 110, lbY + 45 + (i * 25), '', { fontSize: '14px', fill: '#fff', stroke: '#000', strokeThickness: 2 }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(201));
+        }
+
+        // Mutation Menu Button (Visual indicator)
+        this.mutationBtn = this.add.text(window.innerWidth - 150, window.innerHeight - 50, '[ M ] Mutations', {
+            fontSize: '18px', fill: '#00ff00', backgroundColor: '#000', padding: { x: 10, y: 5 }
+        }).setScrollFactor(0).setDepth(200).setInteractive();
+        this.mutationBtn.on('pointerdown', () => this.toggleMutationMenu());
+    }
+
+    createMutationUI() {
+        // Hidden by default
+        this.mutationContainer = this.add.container(window.innerWidth / 2, window.innerHeight / 2).setScrollFactor(0).setDepth(300).setVisible(false);
+
+        const bg = this.add.rectangle(0, 0, 500, 400, 0x111111, 0.9).setStrokeStyle(4, 0x00ff00);
+        const title = this.add.text(0, -160, '🧬 MUTATIONS 🧬', { fontSize: '32px', fill: '#00ff00', fontStyle: 'bold' }).setOrigin(0.5);
+
+        this.dnaText = this.add.text(0, -110, 'DNA Points: 0', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+
+        // Upgrade Buttons
+        this.createUpgradeRow(0, -50, 'Speed (+5%)', 'speed');
+        this.createUpgradeRow(0, 20, 'Max HP (+10)', 'health');
+        this.createUpgradeRow(0, 90, 'Regen (+0.5/s)', 'regen');
+
+        const closeBtn = this.add.text(0, 160, '[ Close (M) ]', { fontSize: '20px', fill: '#aaa' }).setOrigin(0.5).setInteractive();
+        closeBtn.on('pointerdown', () => this.toggleMutationMenu());
+
+        this.mutationContainer.add([bg, title, this.dnaText, closeBtn]);
+    }
+
+    createUpgradeRow(x, y, label, stat) {
+        const text = this.add.text(x - 150, y, label, { fontSize: '20px', fill: '#fff' }).setOrigin(0, 0.5);
+        const valText = this.add.text(x + 50, y, 'Lvl 0', { fontSize: '20px', fill: '#00ff00' }).setOrigin(0.5);
+        const btn = this.add.rectangle(x + 150, y, 40, 40, 0x333333).setInteractive();
+        const btnText = this.add.text(x + 150, y, '+', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+
+        btn.on('pointerdown', () => this.buyMutation(stat, valText));
+
+        this.mutationContainer.add([text, valText, btn, btnText]);
+    }
+
+    toggleMutationMenu() {
+        this.mutationContainer.setVisible(!this.mutationContainer.visible);
+        if (this.mutationContainer.visible) {
+            this.dnaText.setText(`DNA Points: ${this.playerStats.dna}`);
+        }
+    }
+
+    buyMutation(stat, valText) {
+        if (this.playerStats.dna > 0) {
+            this.playerStats.dna--;
+            this.playerStats.mutations[stat]++;
+            this.dnaText.setText(`DNA Points: ${this.playerStats.dna}`);
+            valText.setText(`Lvl ${this.playerStats.mutations[stat]}`);
+
+            // Apply immediate effects
+            if (stat === 'health') {
+                this.playerStats.maxHp += 10;
+                this.playerStats.hp += 10;
+            }
         }
     }
 
@@ -466,8 +623,27 @@ export default class GameScene extends Phaser.Scene {
             const bot = this.bots.create(x, y, 'seed');
             bot.setScale(0.5);
             bot.setCollideWorldBounds(true);
-            bot.setData('stats', { name: names[i] || `Bot${i}`, xp: 0, size: 1, hp: 100, maxHp: 100, form: 'seed' });
-            bot.nameTag = this.add.text(x, y - 40, bot.getData('stats').name, { fontSize: '14px', fill: '#aaa', stroke: '#000', strokeThickness: 2 }).setOrigin(0.5).setDepth(11);
+
+            // Bot Genetics
+            const variantRoll = Math.random();
+            let variant = 'normal';
+            if (variantRoll < 0.01) variant = 'golden';
+            else if (variantRoll < 0.05) variant = 'crystal';
+
+            if (variant === 'golden') bot.setTint(0xFFD700);
+            if (variant === 'crystal') bot.setTint(0x00FFFF);
+
+            bot.setData('stats', {
+                name: names[i] || `Bot${i}`,
+                xp: 0, size: 1, hp: 100, maxHp: 100, form: 'seed',
+                variant: variant
+            });
+
+            let nameText = bot.getData('stats').name;
+            if (variant === 'golden') nameText = '✨ ' + nameText;
+            if (variant === 'crystal') nameText = '💎 ' + nameText;
+
+            bot.nameTag = this.add.text(x, y - 40, nameText, { fontSize: '14px', fill: '#aaa', stroke: '#000', strokeThickness: 2 }).setOrigin(0.5).setDepth(11);
         }
     }
 
@@ -502,7 +678,12 @@ export default class GameScene extends Phaser.Scene {
                 this.playerStats.water -= 20;
                 this.player.setTint(0x00ffff);
                 this.playerStats.hp = Math.min(this.playerStats.maxHp, this.playerStats.hp + 20);
-                this.time.delayedCall(1000, () => this.player.clearTint());
+                this.time.delayedCall(1000, () => {
+                    // Restore variant tint
+                    if (this.playerStats.variant === 'golden') this.player.setTint(0xFFD700);
+                    else if (this.playerStats.variant === 'crystal') this.player.setTint(0x00FFFF);
+                    else this.player.clearTint();
+                });
             }
         }
     }
@@ -518,13 +699,23 @@ export default class GameScene extends Phaser.Scene {
         if (!attacker) return;
         const defStats = attacker === entity1 ? stats2 : stats1;
         const attStats = attacker === entity1 ? stats1 : stats2;
-        const damage = defStats.maxHp / 4;
+
+        let damage = defStats.maxHp / 4;
+
+        // Crystal Defense
+        if (defStats.variant === 'crystal') damage *= 0.8; // 20% reduction
+
         defStats.hp -= damage;
         const angle = Phaser.Math.Angle.Between(attacker.x, attacker.y, defender.x, defender.y);
         defender.body.setVelocity(Math.cos(angle) * 300, Math.sin(angle) * 300);
         attacker.body.setVelocity(Math.cos(angle + Math.PI) * 100, Math.sin(angle + Math.PI) * 100);
         defender.setTint(0xff0000);
-        this.time.delayedCall(200, () => defender.clearTint());
+        this.time.delayedCall(200, () => {
+            // Restore variant tint
+            if (defStats.variant === 'golden') defender.setTint(0xFFD700);
+            else if (defStats.variant === 'crystal') defender.setTint(0x00FFFF);
+            else defender.clearTint();
+        });
         if (defStats.hp <= 0) this.killEntity(defender, attacker, defStats, attStats);
     }
 
@@ -532,7 +723,7 @@ export default class GameScene extends Phaser.Scene {
         if (killer) {
             const xpGain = Math.floor(victimStats.xp * 0.75);
             killerStats.xp += xpGain;
-            if (killer === this.player) this.gainXP(0);
+            if (killer === this.player) this.gainXP(0); // Trigger level up check
             else killer.setData('stats', killerStats);
         }
         victim.destroy();
@@ -546,44 +737,124 @@ export default class GameScene extends Phaser.Scene {
     }
 
     eatWater(player, water) {
-        water.disableBody(true, true);
-        const isSuper = water.getData('isSuper');
-        const xp = isSuper ? 15 : 5;
-        const waterGain = isSuper ? 30 : 10;
+        this.handleResourceEat(player, water, 'water');
+    }
+    eatSun(player, sun) { this.handleResourceEat(player, sun, 'sun'); }
+    eatSoil(player, soil) { this.handleResourceEat(player, soil, 'soil'); }
+
+    handleResourceEat(player, res, type) {
+        // Hard Resource Logic
+        if (res.getData('isHard')) {
+            let hp = res.getData('hp');
+            hp--;
+            res.setData('hp', hp);
+            res.setAlpha(0.5 + (hp / 10)); // Visual feedback
+
+            // Pushback
+            const angle = Phaser.Math.Angle.Between(player.x, player.y, res.x, res.y);
+            player.setVelocity(Math.cos(angle + Math.PI) * 200, Math.sin(angle + Math.PI) * 200);
+
+            if (hp <= 0) {
+                res.disableBody(true, true);
+                this.gainXP(25); // Big XP
+                // Spawn goodies? For now just big XP.
+                const txt = this.add.text(res.x, res.y, '+25 XP!', { fontSize: '24px', fill: '#ff00ff', stroke: '#fff', strokeThickness: 2 }).setDepth(50);
+                this.tweens.add({ targets: txt, y: res.y - 50, alpha: 0, duration: 1000, onComplete: () => txt.destroy() });
+            }
+            return;
+        }
+
+        res.disableBody(true, true);
+        const isSuper = res.getData('isSuper');
+        let xp = isSuper ? 15 : 5;
+        if (type === 'sun') xp = 8;
+        if (type === 'soil') xp = 3;
+
+        const waterGain = (type === 'water') ? (isSuper ? 30 : 10) : 0;
+
         this.gainXP(xp);
         this.playerStats.water = Math.min(this.playerStats.maxWater, this.playerStats.water + waterGain);
+
         if (isSuper) {
-            const txt = this.add.text(player.x, player.y - 50, '+SUPER WATER!', { fontSize: '20px', fill: '#ffd700', stroke: '#000', strokeThickness: 4 }).setDepth(50);
+            const txt = this.add.text(player.x, player.y - 50, '+SUPER!', { fontSize: '20px', fill: '#ffd700', stroke: '#000', strokeThickness: 4 }).setDepth(50);
             this.tweens.add({ targets: txt, y: player.y - 100, alpha: 0, duration: 1000, onComplete: () => txt.destroy() });
         }
     }
-    eatSun(player, sun) { sun.disableBody(true, true); this.gainXP(8); }
-    eatSoil(player, soil) { soil.disableBody(true, true); this.gainXP(3); }
 
     botEatResource(bot, res) {
+        if (res.getData('isHard')) return; // Bots ignore hard resources for now
         res.disableBody(true, true);
         const stats = bot.getData('stats');
         stats.xp += 5;
         bot.setData('stats', stats);
     }
 
+    spawnResources(count) {
+        for (let i = 0; i < count; i++) {
+            this.spawnResource('water');
+            this.spawnResource('sun');
+            this.spawnResource('soil');
+        }
+    }
+
+    spawnResource(type, isSuper = false) {
+        const x = Phaser.Math.Between(0, this.MAP_WIDTH);
+        const y = Phaser.Math.Between(0, this.MAP_HEIGHT);
+        let group = type === 'water' ? this.waters : (type === 'sun' ? this.suns : this.soils);
+        const res = group.create(x, y, type).setScale(0.5);
+
+        // Hard Resource Chance (1%)
+        if (Math.random() < 0.01) {
+            res.setTint(0x880088); // Purple tint for Hard
+            res.setData('isHard', true);
+            res.setData('hp', 5);
+            res.setScale(1.2);
+            return;
+        }
+
+        if (isSuper && type === 'water') {
+            res.setTint(0xffd700);
+            res.setData('isSuper', true);
+            res.setScale(0.8);
+        }
+    }
+
+    respawnResources() {
+        if (this.waters.countActive(true) < 300) this.spawnResource('water');
+        if (this.suns.countActive(true) < 300) this.spawnResource('sun');
+        if (this.soils.countActive(true) < 300) this.spawnResource('soil');
+    }
+
     gainXP(amount) {
+        // Golden Multiplier
+        if (this.playerStats.variant === 'golden') amount *= 2;
+
         this.playerStats.xp += amount;
         if (this.playerStats.xp >= this.playerStats.nextLevelXP) this.triggerEvolution();
     }
 
     triggerEvolution() {
         this.isEvolving = true;
+
+        // Award DNA Point
+        this.playerStats.dna++;
+        if (this.mutationContainer && this.mutationContainer.visible) {
+            this.dnaText.setText(`DNA Points: ${this.playerStats.dna}`);
+        }
+
         this.player.setVelocity(0);
         const overlay = this.add.rectangle(0, 0, window.innerWidth, window.innerHeight, 0x000000, 0.9).setScrollFactor(0).setOrigin(0).setDepth(30);
         const title = this.add.text(window.innerWidth / 2, 100, 'EVOLUTION TIME', { fontSize: '48px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5).setDepth(31);
+
+        const dnaMsg = this.add.text(window.innerWidth / 2, 160, '+1 DNA POINT!', { fontSize: '24px', fill: '#00ff00', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(31);
+
         if (this.playerStats.form === 'seed') {
-            this.createEvoCard(window.innerWidth / 2 - 200, window.innerHeight / 2, 'carnivore', 'EVIL', 'Ability: Dash\nCost: Water', () => this.evolveTo('carnivore', 'evil', overlay, title));
-            this.createEvoCard(window.innerWidth / 2 + 200, window.innerHeight / 2, 'tree', 'PEACE', 'Ability: Heal\nCost: Water', () => this.evolveTo('tree', 'peace', overlay, title));
+            this.createEvoCard(window.innerWidth / 2 - 200, window.innerHeight / 2, 'carnivore', 'EVIL', 'Ability: Dash\nCost: Water', () => this.evolveTo('carnivore', 'evil', overlay, title, dnaMsg));
+            this.createEvoCard(window.innerWidth / 2 + 200, window.innerHeight / 2, 'tree', 'PEACE', 'Ability: Heal\nCost: Water', () => this.evolveTo('tree', 'peace', overlay, title, dnaMsg));
         } else {
             const nextForm = this.playerStats.path === 'evil' ? 'flytrap' : 'ancient_tree';
             const name = this.playerStats.path === 'evil' ? 'Venus Flytrap' : 'Ancient Tree';
-            this.createEvoCard(window.innerWidth / 2, window.innerHeight / 2, nextForm, name, 'Ultimate Power', () => this.evolveTo(nextForm, this.playerStats.path, overlay, title));
+            this.createEvoCard(window.innerWidth / 2, window.innerHeight / 2, nextForm, name, 'Ultimate Power', () => this.evolveTo(nextForm, this.playerStats.path, overlay, title, dnaMsg));
         }
     }
 
@@ -597,9 +868,10 @@ export default class GameScene extends Phaser.Scene {
         this.evoUI.push(bg, img, t, d);
     }
 
-    evolveTo(form, path, overlay, title) {
+    evolveTo(form, path, overlay, title, dnaMsg) {
         overlay.destroy();
         title.destroy();
+        dnaMsg.destroy();
         if (this.evoUI) this.evoUI.forEach(el => el.destroy());
         this.evoUI = [];
         this.player.setTexture(form);
@@ -632,31 +904,5 @@ export default class GameScene extends Phaser.Scene {
                 this.leaderboardEntries[i].setText('');
             }
         }
-    }
-
-    spawnResources(count) {
-        for (let i = 0; i < count; i++) {
-            this.spawnResource('water');
-            this.spawnResource('sun');
-            this.spawnResource('soil');
-        }
-    }
-
-    spawnResource(type, isSuper = false) {
-        const x = Phaser.Math.Between(0, this.MAP_WIDTH);
-        const y = Phaser.Math.Between(0, this.MAP_HEIGHT);
-        let group = type === 'water' ? this.waters : (type === 'sun' ? this.suns : this.soils);
-        const res = group.create(x, y, type).setScale(0.5);
-        if (isSuper && type === 'water') {
-            res.setTint(0xffd700);
-            res.setData('isSuper', true);
-            res.setScale(0.8);
-        }
-    }
-
-    respawnResources() {
-        if (this.waters.countActive(true) < 100) this.spawnResource('water');
-        if (this.suns.countActive(true) < 100) this.spawnResource('sun');
-        if (this.soils.countActive(true) < 100) this.spawnResource('soil');
     }
 }
