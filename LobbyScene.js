@@ -52,8 +52,8 @@ export default class LobbyScene extends Phaser.Scene {
                 <!-- Auth Corner (Top Right) - Only when Logged OUT -->
                 ${!isLoggedIn ? `
                     <div class="auth-corner">
-                        <button class="auth-btn btn-login" id="loginBtn">Log In</button>
-                        <button class="auth-btn btn-register" id="registerBtn">Register</button>
+                        <button class="auth-btn btn-login" id="openLoginBtn">Log In</button>
+                        <button class="auth-btn btn-register" id="openRegisterBtn">Register</button>
                     </div>
                 ` : ''}
 
@@ -110,6 +110,44 @@ export default class LobbyScene extends Phaser.Scene {
                     </div>
                 </div>
                 
+                <!-- Login Modal -->
+                <div id="loginModal" class="auth-modal">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Welcome Back</h3>
+                        <button class="close-btn" id="closeLogin">×</button>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">USERNAME</label>
+                        <input type="text" id="loginUser" class="menu-input" placeholder="Username">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">PASSWORD</label>
+                        <input type="password" id="loginPass" class="menu-input" placeholder="Password">
+                    </div>
+                    <button class="modal-submit-btn" id="submitLogin">LOG IN</button>
+                </div>
+
+                <!-- Register Modal -->
+                <div id="registerModal" class="auth-modal">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Create Account</h3>
+                        <button class="close-btn" id="closeRegister">×</button>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">EMAIL</label>
+                        <input type="email" id="regEmail" class="menu-input" placeholder="Email Address">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">USERNAME</label>
+                        <input type="text" id="regUser" class="menu-input" placeholder="Choose Username">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">PASSWORD</label>
+                        <input type="password" id="regPass" class="menu-input" placeholder="Create Password">
+                    </div>
+                    <button class="modal-submit-btn" id="submitRegister" style="background: #00ff00; color: black;">REGISTER</button>
+                </div>
+
                 <div style="position: absolute; bottom: 10px; color: #666; font-size: 12px;">
                     © 2025 EvoWorld.io | v0.4.0
                 </div>
@@ -123,38 +161,68 @@ export default class LobbyScene extends Phaser.Scene {
         domElement.addListener('click');
         domElement.on('click', (event) => {
             const target = event.target;
+            const id = target.id;
 
-            if (target.id === 'playBtn') {
-                const nicknameInput = domElement.getChildByID('nickname');
-                const serverInput = domElement.getChildByID('server');
-                const nickname = nicknameInput.value;
-                const server = serverInput.value;
-
+            // Play Button
+            if (id === 'playBtn') {
+                const nickname = domElement.getChildByID('nickname').value;
+                const server = domElement.getChildByID('server').value;
                 if (nickname.trim() !== '') {
                     localStorage.setItem('evoworld_nickname', nickname);
                     this.scene.start('GameScene', { nickname: nickname, server: server });
                 } else {
-                    nicknameInput.style.borderColor = '#ff0000';
+                    domElement.getChildByID('nickname').style.borderColor = '#ff0000';
                 }
             }
 
-            // Mock Auth Logic
-            if (target.id === 'loginBtn') {
-                const name = prompt("Enter username (Mock Login):", "SpartianinKolki");
-                if (name) {
+            // Open Modals
+            if (id === 'openLoginBtn') {
+                domElement.getChildByID('loginModal').style.display = 'block';
+                domElement.getChildByID('registerModal').style.display = 'none';
+            }
+            if (id === 'openRegisterBtn') {
+                domElement.getChildByID('registerModal').style.display = 'block';
+                domElement.getChildByID('loginModal').style.display = 'none';
+            }
+
+            // Close Modals
+            if (id === 'closeLogin') domElement.getChildByID('loginModal').style.display = 'none';
+            if (id === 'closeRegister') domElement.getChildByID('registerModal').style.display = 'none';
+
+            // Submit Login
+            if (id === 'submitLogin') {
+                const user = domElement.getChildByID('loginUser').value;
+                const pass = domElement.getChildByID('loginPass').value;
+                if (user && pass) {
+                    // Simulate API call
                     localStorage.setItem('evoworld_token', 'true');
-                    localStorage.setItem('evoworld_username', name);
-                    this.scene.restart(); // Reload scene to update UI
+                    localStorage.setItem('evoworld_username', user);
+                    this.scene.restart();
+                } else {
+                    alert('Please fill in all fields');
                 }
             }
 
-            if (target.id === 'logoutBtn') {
+            // Submit Register
+            if (id === 'submitRegister') {
+                const email = domElement.getChildByID('regEmail').value;
+                const user = domElement.getChildByID('regUser').value;
+                const pass = domElement.getChildByID('regPass').value;
+                if (email && user && pass) {
+                    // Simulate API call
+                    localStorage.setItem('evoworld_token', 'true');
+                    localStorage.setItem('evoworld_username', user);
+                    alert('Account created! Welcome ' + user);
+                    this.scene.restart();
+                } else {
+                    alert('Please fill in all fields');
+                }
+            }
+
+            // Logout
+            if (id === 'logoutBtn') {
                 localStorage.removeItem('evoworld_token');
                 this.scene.restart();
-            }
-
-            if (target.id === 'shopBtn') {
-                alert('Skin Shop coming soon in Phase 9!');
             }
         });
 
