@@ -156,7 +156,7 @@ body {
   color: #FF0000;
 }
 
-/* Profile / Login Panel (Left Side) */
+/* Profile Panel (Left Side - Only when logged in) */
 .profile-panel {
   position: absolute;
   left: 30px;
@@ -248,34 +248,45 @@ body {
   transform: scale(1.02);
 }
 
+/* Auth Corner (Top Right) */
+.auth-corner {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 15px;
+  pointer-events: auto;
+}
+
 .auth-btn {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
+  padding: 10px 20px;
   border: none;
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
 }
 
 .btn-login {
-  background: #2196F3;
+  background: transparent;
   color: white;
+  border: 2px solid transparent;
 }
 
 .btn-login:hover {
-  background: #1976D2;
+  color: #00ff00;
 }
 
 .btn-register {
-  background: transparent;
-  border: 2px solid #2196F3;
-  color: #2196F3;
+  background: #00ff00;
+  color: #000;
 }
 
 .btn-register:hover {
-  background: rgba(33, 150, 243, 0.1);
+  background: #00cc00;
+  transform: scale(1.05);
 }
 
 @keyframes fadeIn {
@@ -302,7 +313,7 @@ body {
   }
 }
 
-/* Changelog (Top Left) - Moved slightly to avoid overlap */
+/* Changelog (Top Left) */
 .changelog-box {
   position: absolute;
   top: 20px;

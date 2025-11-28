@@ -49,9 +49,17 @@ export default class LobbyScene extends Phaser.Scene {
                     </ul>
                 </div>
 
-                <!-- Profile / Auth Panel (Left) -->
-                <div class="profile-panel">
-                    ${isLoggedIn ? `
+                <!-- Auth Corner (Top Right) - Only when Logged OUT -->
+                ${!isLoggedIn ? `
+                    <div class="auth-corner">
+                        <button class="auth-btn btn-login" id="loginBtn">Log In</button>
+                        <button class="auth-btn btn-register" id="registerBtn">Register</button>
+                    </div>
+                ` : ''}
+
+                <!-- Profile Panel (Left) - Only when Logged IN -->
+                ${isLoggedIn ? `
+                    <div class="profile-panel">
                         <div class="profile-header">
                             <div class="avatar">👤</div>
                             <div class="user-info">
@@ -69,14 +77,9 @@ export default class LobbyScene extends Phaser.Scene {
                             </div>
                         </div>
                         <button class="shop-btn" id="shopBtn">🛒 Skin Shop</button>
-                        <button class="small-btn" id="logoutBtn" style="margin-top: 10px; width: 100%; background: #333;">Logout</button>
-                    ` : `
-                        <h2 style="margin-top: 0; color: #fff;">Welcome!</h2>
-                        <p style="color: #aaa; margin-bottom: 20px;">Join the evolution today.</p>
-                        <button class="auth-btn btn-login" id="loginBtn">Log In</button>
-                        <button class="auth-btn btn-register" id="registerBtn">Register</button>
-                    `}
-                </div>
+                        <button class="small-btn" id="logoutBtn" style="margin-top: 10px; width: 100%; background: #333; border: none; color: #aaa; cursor: pointer;">Logout</button>
+                    </div>
+                ` : ''}
 
                 <!-- Main Card -->
                 <div class="menu-card">
