@@ -27,6 +27,14 @@ export default class LobbyScene extends Phaser.Scene {
             blendMode: 'ADD'
         });
 
+        // Check Login State (Mock)
+        const isLoggedIn = localStorage.getItem('evoworld_token') === 'true';
+        const username = localStorage.getItem('evoworld_username') || 'Guest';
+        const level = 5; // Mock
+        const xp = 750; // Mock
+        const maxXp = 1000;
+        const xpPercent = (xp / maxXp) * 100;
+
         // 2. HTML UI
         const html = `
             <div class="menu-overlay">
@@ -41,13 +49,42 @@ export default class LobbyScene extends Phaser.Scene {
                     </ul>
                 </div>
 
+                <!-- Profile / Auth Panel (Left) -->
+                <div class="profile-panel">
+                    ${isLoggedIn ? `
+                        <div class="profile-header">
+                            <div class="avatar">👤</div>
+                            <div class="user-info">
+                                <h3>${username}</h3>
+                                <p>Level ${level}</p>
+                            </div>
+                        </div>
+                        <div class="xp-container">
+                            <div class="xp-label">
+                                <span>XP</span>
+                                <span>${xp} / ${maxXp}</span>
+                            </div>
+                            <div class="xp-bar-bg">
+                                <div class="xp-bar-fill" style="width: ${xpPercent}%"></div>
+                            </div>
+                        </div>
+                        <button class="shop-btn" id="shopBtn">🛒 Skin Shop</button>
+                        <button class="small-btn" id="logoutBtn" style="margin-top: 10px; width: 100%; background: #333;">Logout</button>
+                    ` : `
+                        <h2 style="margin-top: 0; color: #fff;">Welcome!</h2>
+                        <p style="color: #aaa; margin-bottom: 20px;">Join the evolution today.</p>
+                        <button class="auth-btn btn-login" id="loginBtn">Log In</button>
+                        <button class="auth-btn btn-register" id="registerBtn">Register</button>
+                    `}
+                </div>
+
                 <!-- Main Card -->
                 <div class="menu-card">
                     <h1 class="menu-title">EvoWorld.io</h1>
                     
                     <div class="input-group">
                         <label class="input-label">NICKNAME</label>
-                        <input type="text" id="nickname" class="menu-input" placeholder="Enter your name..." maxlength="15">
+                        <input type="text" id="nickname" class="menu-input" placeholder="Enter your name..." maxlength="15" value="${isLoggedIn ? username : ''}">
                     </div>
 
                     <div class="input-group">
@@ -63,16 +100,10 @@ export default class LobbyScene extends Phaser.Scene {
 
                     <button id="playBtn" class="play-btn">PLAY NOW</button>
 
-                    <div class="extra-buttons">
-                        <button class="small-btn">👕 Skins</button>
-                        <button class="small-btn">⚙️ Settings</button>
-                        <button class="small-btn">🏆 Rank</button>
-                    </div>
-
                     <div class="socials">
-                        <a href="#" class="social-btn discord">💬</a>
-                        <a href="#" class="social-btn twitter">🐦</a>
-                        <a href="#" class="social-btn youtube">▶️</a>
+                        <a href="#" class="social-btn facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="social-btn twitter"><i class="fa-brands fa-x-twitter"></i></a>
+                        <a href="#" class="social-btn youtube"><i class="fa-brands fa-youtube"></i></a>
                     </div>
                 </div>
                 
@@ -88,33 +119,49 @@ export default class LobbyScene extends Phaser.Scene {
         // Event Listeners
         domElement.addListener('click');
         domElement.on('click', (event) => {
-            if (event.target.id === 'playBtn') {
+            const target = event.target;
+
+            if (target.id === 'playBtn') {
                 const nicknameInput = domElement.getChildByID('nickname');
                 const serverInput = domElement.getChildByID('server');
-
                 const nickname = nicknameInput.value;
                 const server = serverInput.value;
 
                 if (nickname.trim() !== '') {
-                    // Save nickname
                     localStorage.setItem('evoworld_nickname', nickname);
                     this.scene.start('GameScene', { nickname: nickname, server: server });
                 } else {
                     nicknameInput.style.borderColor = '#ff0000';
-                    nicknameInput.placeholder = 'Nickname required!';
-                    setTimeout(() => {
-                        nicknameInput.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                        nicknameInput.placeholder = 'Enter your name...';
-                    }, 1000);
                 }
+            }
+
+            // Mock Auth Logic
+            if (target.id === 'loginBtn') {
+                const name = prompt("Enter username (Mock Login):", "SpartianinKolki");
+                if (name) {
+                    localStorage.setItem('evoworld_token', 'true');
+                    localStorage.setItem('evoworld_username', name);
+                    this.scene.restart(); // Reload scene to update UI
+                }
+            }
+
+            if (target.id === 'logoutBtn') {
+                localStorage.removeItem('evoworld_token');
+                this.scene.restart();
+            }
+
+            if (target.id === 'shopBtn') {
+                alert('Skin Shop coming soon in Phase 9!');
             }
         });
 
-        // Load saved nickname
-        const savedName = localStorage.getItem('evoworld_nickname');
-        if (savedName) {
-            const input = domElement.getChildByID('nickname');
-            if (input) input.value = savedName;
+        // Load saved nickname if not logged in
+        if (!isLoggedIn) {
+            const savedName = localStorage.getItem('evoworld_nickname');
+            if (savedName) {
+                const input = domElement.getChildByID('nickname');
+                if (input) input.value = savedName;
+            }
         }
     }
 }

@@ -21,9 +21,9 @@ body {
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  /* Let clicks pass through to Phaser if needed, but child elements will re-enable */
 }
 
+/* Center Card (Play) */
 .menu-card {
   background: rgba(20, 20, 20, 0.85);
   backdrop-filter: blur(10px);
@@ -36,6 +36,8 @@ body {
   pointer-events: auto;
   min-width: 350px;
   animation: fadeIn 0.5s ease-out;
+  position: relative;
+  z-index: 10;
 }
 
 .menu-title {
@@ -112,6 +114,7 @@ body {
   transform: scale(0.95);
 }
 
+/* Socials */
 .socials {
   margin-top: 25px;
   display: flex;
@@ -132,6 +135,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 20px;
   text-decoration: none;
+  color: #fff;
 }
 
 .social-btn:hover {
@@ -139,39 +143,139 @@ body {
   transform: translateY(-3px);
 }
 
-.discord:hover {
-  color: #5865F2;
+.facebook:hover {
+  color: #1877F2;
 }
 
 .twitter:hover {
-  color: #1DA1F2;
+  color: #000000;
 }
 
+/* X is black */
 .youtube:hover {
   color: #FF0000;
 }
 
-.extra-buttons {
-  margin-top: 20px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.small-btn {
-  padding: 8px 15px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
-  color: #ccc;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.3s;
-}
-
-.small-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+/* Profile / Login Panel (Left Side) */
+.profile-panel {
+  position: absolute;
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 280px;
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 25px;
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
   color: white;
+  pointer-events: auto;
+  animation: slideRight 0.5s ease-out;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  background: #333;
+  border-radius: 50%;
+  border: 2px solid #00ff00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.user-info h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #00ff00;
+}
+
+.user-info p {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+  color: #aaa;
+}
+
+.xp-container {
+  margin-bottom: 20px;
+}
+
+.xp-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #ccc;
+  margin-bottom: 5px;
+}
+
+.xp-bar-bg {
+  width: 100%;
+  height: 10px;
+  background: #333;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff00, #00aa00);
+  width: 0%;
+  /* Dynamic */
+}
+
+.shop-btn {
+  width: 100%;
+  padding: 10px;
+  background: #ff9800;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.shop-btn:hover {
+  background: #e68900;
+  transform: scale(1.02);
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-login {
+  background: #2196F3;
+  color: white;
+}
+
+.btn-login:hover {
+  background: #1976D2;
+}
+
+.btn-register {
+  background: transparent;
+  border: 2px solid #2196F3;
+  color: #2196F3;
+}
+
+.btn-register:hover {
+  background: rgba(33, 150, 243, 0.1);
 }
 
 @keyframes fadeIn {
@@ -186,6 +290,19 @@ body {
   }
 }
 
+@keyframes slideRight {
+  from {
+    opacity: 0;
+    transform: translate(-50px, -50%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+}
+
+/* Changelog (Top Left) - Moved slightly to avoid overlap */
 .changelog-box {
   position: absolute;
   top: 20px;
@@ -198,6 +315,7 @@ body {
   max-width: 250px;
   border-left: 4px solid #00ff00;
   pointer-events: auto;
+  z-index: 5;
 }
 
 .changelog-title {
