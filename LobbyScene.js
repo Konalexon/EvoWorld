@@ -30,8 +30,8 @@ export default class LobbyScene extends Phaser.Scene {
         // Check Login State (Mock)
         const isLoggedIn = localStorage.getItem('evoworld_token') === 'true';
         const username = localStorage.getItem('evoworld_username') || 'Guest';
-        const level = 5; // Mock
-        const xp = 750; // Mock
+        const level = 1; // Mock
+        const xp = 0; // Mock
         const maxXp = 1000;
         const xpPercent = (xp / maxXp) * 100;
 
