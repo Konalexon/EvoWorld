@@ -7,7 +7,11 @@ export default class LobbyScene extends Phaser.Scene {
 
     preload() {
         this.load.image('background', '/assets/background.png');
-        this.load.image('seed', '/assets/seed.png'); // For Skin Preview
+        this.load.image('seed', '/assets/seed.svg'); // For Skin Preview
+        this.load.image('tree', '/assets/tree.svg'); // For Skin Preview
+        this.load.image('ancient_tree', '/assets/ancient_tree.svg'); // For Skin Preview
+        this.load.image('flytrap', '/assets/flytrap.svg'); // For Skin Preview
+        this.load.image('carnivore', '/assets/carnivore.svg'); // For Skin Preview
     }
 
     create() {
