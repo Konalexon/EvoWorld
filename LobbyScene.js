@@ -7,6 +7,7 @@ export default class LobbyScene extends Phaser.Scene {
 
     preload() {
         this.load.image('background', '/assets/background.png');
+        this.load.image('seed', '/assets/seed.png'); // For Skin Preview
     }
 
     create() {
@@ -27,13 +28,30 @@ export default class LobbyScene extends Phaser.Scene {
             blendMode: 'ADD'
         });
 
+        // Skin Preview (Spinning Entity)
+        this.skinPreview = this.add.image(window.innerWidth / 2, window.innerHeight / 2 - 150, 'seed').setScale(3);
+        this.tweens.add({
+            targets: this.skinPreview,
+            angle: 360,
+            duration: 10000,
+            repeat: -1,
+            ease: 'Linear'
+        });
+
         // Check Login State (Mock)
         const isLoggedIn = localStorage.getItem('evoworld_token') === 'true';
         const username = localStorage.getItem('evoworld_username') || 'Guest';
-        const level = 1; // Mock
-        const xp = 0; // Mock
-        const maxXp = 1000;
+
+        // Load Real Stats
+        const level = parseInt(localStorage.getItem('evoworld_level')) || 1;
+        const xp = parseInt(localStorage.getItem('evoworld_xp')) || 0;
+        const maxXp = level * 1000;
         const xpPercent = (xp / maxXp) * 100;
+
+        // Daily Reward Logic
+        const lastClaim = localStorage.getItem('evoworld_daily_claim');
+        const now = Date.now();
+        const canClaim = !lastClaim || (now - parseInt(lastClaim) > 86400000); // 24h
 
         // 2. HTML UI
         const html = `
@@ -42,10 +60,10 @@ export default class LobbyScene extends Phaser.Scene {
                 <div class="changelog-box">
                     <div class="changelog-title">📢 Latest Updates (v0.4.0)</div>
                     <ul style="padding-left: 20px; margin: 0;">
+                        <li>⚔️ <b>Bot Aggression:</b> Watch out!</li>
+                        <li>🎁 <b>Daily Rewards:</b> Free XP!</li>
                         <li>🧬 Mutation System Added!</li>
-                        <li>💎 Rare Genetics (Golden/Crystal)</li>
                         <li>🌋 Volcano Biome & Lava</li>
-                        <li>📊 New HP Bars & UI</li>
                     </ul>
                 </div>
 
@@ -77,12 +95,18 @@ export default class LobbyScene extends Phaser.Scene {
                             </div>
                         </div>
                         <button class="shop-btn" id="shopBtn">🛒 Skin Shop</button>
+                        
+                        <!-- Daily Reward Button -->
+                        <button id="dailyRewardBtn" class="daily-btn ${canClaim ? 'active' : 'disabled'}" ${canClaim ? '' : 'disabled'}>
+                            ${canClaim ? '🎁 Claim Daily Reward' : '⏳ Come back tomorrow'}
+                        </button>
+
                         <button class="small-btn" id="logoutBtn" style="margin-top: 10px; width: 100%; background: #333; border: none; color: #aaa; cursor: pointer;">Logout</button>
                     </div>
                 ` : ''}
 
                 <!-- Main Card -->
-                <div class="menu-card">
+                <div class="menu-card" style="margin-top: 100px;">
                     <h1 class="menu-title">EvoWorld.io</h1>
                     
                     <div class="input-group">
@@ -175,6 +199,15 @@ export default class LobbyScene extends Phaser.Scene {
                 }
             }
 
+            // Daily Reward
+            if (id === 'dailyRewardBtn' && canClaim) {
+                const newXp = xp + 200;
+                localStorage.setItem('evoworld_xp', newXp);
+                localStorage.setItem('evoworld_daily_claim', Date.now());
+                alert('You claimed 200 XP! 🎉');
+                this.scene.restart();
+            }
+
             // Open Modals
             if (id === 'openLoginBtn') {
                 domElement.getChildByID('loginModal').style.display = 'block';
@@ -194,7 +227,6 @@ export default class LobbyScene extends Phaser.Scene {
                 const user = domElement.getChildByID('loginUser').value;
                 const pass = domElement.getChildByID('loginPass').value;
                 if (user && pass) {
-                    // Simulate API call
                     localStorage.setItem('evoworld_token', 'true');
                     localStorage.setItem('evoworld_username', user);
                     this.scene.restart();
@@ -209,9 +241,10 @@ export default class LobbyScene extends Phaser.Scene {
                 const user = domElement.getChildByID('regUser').value;
                 const pass = domElement.getChildByID('regPass').value;
                 if (email && user && pass) {
-                    // Simulate API call
                     localStorage.setItem('evoworld_token', 'true');
                     localStorage.setItem('evoworld_username', user);
+                    localStorage.setItem('evoworld_level', '1');
+                    localStorage.setItem('evoworld_xp', '0');
                     alert('Account created! Welcome ' + user);
                     this.scene.restart();
                 } else {

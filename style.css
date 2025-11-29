@@ -248,6 +248,43 @@ body {
   transform: scale(1.02);
 }
 
+.daily-btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.daily-btn.active {
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  color: black;
+  animation: pulse 2s infinite;
+}
+
+.daily-btn.disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
 /* Auth Corner (Top Right) */
 .auth-corner {
   position: absolute;
