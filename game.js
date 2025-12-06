@@ -26,6 +26,12 @@ export default class GameScene extends Phaser.Scene {
         this.load.svg('seed', '/assets/seed.svg', { width: 64, height: 64 });
         this.load.svg('water', '/assets/water.svg', { width: 64, height: 64 });
         this.load.svg('soil', '/assets/soil.svg', { width: 64, height: 64 });
+
+        // === AUDIO ===
+        this.load.audio('hitSound', '/assets/sounds/hit.wav');
+        this.load.audio('collectSound', '/assets/sounds/collect.m4a');
+        this.load.audio('levelupSound', '/assets/sounds/levelup.mp3');
+        this.load.audio('rainSound', '/assets/sounds/rain.wav');
     }
 
     create() {
@@ -59,6 +65,9 @@ export default class GameScene extends Phaser.Scene {
             this.player.setCollideWorldBounds(true);
             this.player.setScale(0.5);
             this.player.setDepth(10);
+            // Smaller circular hitbox (fits sprite better)
+            const playerRadius = 24;
+            this.player.body.setCircle(playerRadius, this.player.width / 2 - playerRadius, this.player.height / 2 - playerRadius);
 
             // Stats & Genetics
             const variantRoll = Math.random();
@@ -131,6 +140,9 @@ export default class GameScene extends Phaser.Scene {
             this.createUI();
             this.createMutationUI(); // New Mutation UI
             this.createMinimap();
+
+            // 9. Audio System
+            this.initGameAudio();
 
             // Input
             this.input.keyboard.on('keydown-SPACE', this.useAbility, this);
@@ -317,22 +329,36 @@ export default class GameScene extends Phaser.Scene {
     }
 
     getBiome(x, y) {
-        const tileSize = 512;
-        const tileX = Math.floor(x / tileSize) * tileSize;
-        const tileY = Math.floor(y / tileSize) * tileSize;
+        // Multi-octave Perlin-like noise for very smooth biome blending
+        const noise = (x, y) => {
+            const n = Math.sin(x * 0.0008 + y * 0.0015) * 0.6
+                + Math.sin(x * 0.0025 - y * 0.0008) * 0.4
+                + Math.cos(x * 0.0015 + y * 0.0022) * 0.3
+                + Math.sin((x + y) * 0.001) * 0.5
+                + Math.cos((x - y) * 0.0018) * 0.35;
+            return n;
+        };
 
-        const scale = 0.0005;
-        const noise = Math.sin(tileX * scale) + Math.cos(tileY * scale);
+        // Micro-noise for edge randomization
+        const microNoise = Math.sin(x * 0.01 + y * 0.013) * 200
+            + Math.cos(x * 0.008 - y * 0.011) * 150;
 
-        const dSnow = Phaser.Math.Distance.Between(tileX, tileY, 4000, 0) + (noise * 500);
-        const dForest = Phaser.Math.Distance.Between(tileX, tileY, 4000, 8000) + (noise * 500);
-        const dLava = Phaser.Math.Distance.Between(tileX, tileY, 0, 4000) + (noise * 500);
-        const dDesert = Phaser.Math.Distance.Between(tileX, tileY, 8000, 4000) + (noise * 500);
-        const dMeadow = Phaser.Math.Distance.Between(tileX, tileY, 4000, 4000);
+        const noiseValue = noise(x, y) * 1200 + microNoise; // Much higher randomization
 
-        if (dMeadow < 2500) {
-            const lakeNoise = Math.sin(tileX * 0.002) + Math.cos(tileY * 0.002);
-            if (lakeNoise > 1.2) return 'lake';
+        // Distance to biome centers with noise offset
+        const dSnow = Phaser.Math.Distance.Between(x, y, 4000, 0) + noiseValue;
+        const dForest = Phaser.Math.Distance.Between(x, y, 4000, 8000) + noiseValue * 0.7;
+        const dLava = Phaser.Math.Distance.Between(x, y, 0, 4000) + noiseValue * 1.3;
+        const dDesert = Phaser.Math.Distance.Between(x, y, 8000, 4000) + noiseValue * 0.85;
+        const dMeadow = Phaser.Math.Distance.Between(x, y, 4000, 4000);
+
+        // Lake generation with more organic noise
+        const lakeNoise = Math.sin(x * 0.002 + y * 0.0008) + Math.cos(x * 0.0008 + y * 0.0025)
+            + Math.sin((x - y) * 0.0015) * 0.6
+            + Math.cos((x + y) * 0.001) * 0.4;
+
+        if (dMeadow < 2800 + noiseValue * 0.4) {
+            if (lakeNoise > 0.85) return 'lake';
             return 'meadow';
         }
 
@@ -413,12 +439,14 @@ export default class GameScene extends Phaser.Scene {
                 this.rainParticles.start();
                 this.weatherText.setText('Weather: RAIN 🌧️');
                 this.weatherText.setColor('#00ffff');
+                this.playSound('rain_start');
                 this.spawnResource('water', true);
                 this.spawnResource('water', true);
                 this.spawnResource('water', true);
             } else {
                 this.weather = 'clear';
                 this.rainParticles.stop();
+                this.playSound('rain_stop');
                 this.weatherText.setText('Weather: CLEAR ☀️');
                 this.weatherText.setColor('#ffff00');
             }
@@ -429,62 +457,132 @@ export default class GameScene extends Phaser.Scene {
     }
 
     createBiomes() {
-        const tileSize = 512;
+        const tileSize = 128;
         const cols = Math.ceil(this.MAP_WIDTH / tileSize);
         const rows = Math.ceil(this.MAP_HEIGHT / tileSize);
+
+        const noiseAt = (x, y) => {
+            return Math.sin(x * 0.0017 + y * 0.0023) * 0.4
+                + Math.cos(x * 0.0031 - y * 0.0019) * 0.35
+                + Math.sin((x + y) * 0.0013) * 0.25;
+        };
 
         for (let y = 0; y < rows; y++) {
             for (let x = 0; x < cols; x++) {
                 const posX = x * tileSize;
                 const posY = y * tileSize;
+                const centerX = posX + tileSize / 2;
+                const centerY = posY + tileSize / 2;
 
-                const biome = this.getBiome(posX + tileSize / 2, posY + tileSize / 2);
+                const biome = this.getBiome(centerX, centerY);
                 let texture = biome;
 
                 if (biome === 'forest') texture = 'forest_floor';
 
-                this.add.image(posX, posY, texture).setOrigin(0).setDisplaySize(tileSize, tileSize).setDepth(0);
+                const tile = this.add.image(posX, posY, texture)
+                    .setOrigin(0)
+                    .setDisplaySize(tileSize, tileSize)
+                    .setDepth(0);
+
+                const noise = noiseAt(posX, posY);
+                const alphaVar = 0.85 + noise * 0.15;
+                tile.setAlpha(alphaVar);
+
+                tile.setRotation((noise * 0.08) - 0.04);
             }
         }
     }
 
     createUI() {
-        // Bottom Center Layout
-        const barWidth = 400;
+        // === ORGANIC NATURE UI STYLE ===
         const centerX = window.innerWidth / 2;
-        const bottomY = window.innerHeight - 80;
+        const bottomY = window.innerHeight - 70;
 
-        this.formText = this.add.text(centerX, bottomY - 40, 'Form: SEED', {
-            fontSize: '24px', fill: '#ffd700', stroke: '#000', strokeThickness: 4, fontStyle: 'bold'
+        // Form Text - Organic leaf style
+        this.formText = this.add.text(centerX, bottomY - 50, 'Form: SEED', {
+            fontSize: '28px',
+            fill: '#90EE90',
+            stroke: '#1a4d1a',
+            strokeThickness: 6,
+            fontStyle: 'bold',
+            fontFamily: 'Arial'
         }).setScrollFactor(0).setOrigin(0.5).setDepth(200);
 
-        // XP Bar
-        this.xpBarBg = this.add.rectangle(centerX - barWidth / 2, bottomY, barWidth, 15, 0x333333).setScrollFactor(0).setOrigin(0).setDepth(200);
-        this.xpBarFill = this.add.rectangle(centerX - barWidth / 2, bottomY, 0, 15, 0x00ff00).setScrollFactor(0).setOrigin(0).setDepth(201);
-        this.xpText = this.add.text(centerX, bottomY + 8, 'XP: 0 / 300', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(202);
+        // === XP BAR - Organic Gradient ===
+        const barWidth = 350;
+        const barHeight = 16;
 
-        // Water Bar
-        this.waterBarBg = this.add.rectangle(centerX - barWidth / 2, bottomY + 20, barWidth, 15, 0x333333).setScrollFactor(0).setOrigin(0).setDepth(200);
-        this.waterBarFill = this.add.rectangle(centerX - barWidth / 2, bottomY + 20, barWidth, 15, 0x2196F3).setScrollFactor(0).setOrigin(0).setDepth(201);
-        this.waterText = this.add.text(centerX, bottomY + 28, 'Water: 100%', { fontSize: '12px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0).setOrigin(0.5).setDepth(202);
+        // XP Bar Background (dark wood)
+        this.xpBarBg = this.add.graphics().setScrollFactor(0).setDepth(200);
+        this.xpBarBg.fillStyle(0x1a3d1a, 0.85);
+        this.xpBarBg.fillRoundedRect(centerX - barWidth / 2, bottomY, barWidth, barHeight, 8);
+        this.xpBarBg.lineStyle(2, 0x4a8f4a, 1);
+        this.xpBarBg.strokeRoundedRect(centerX - barWidth / 2, bottomY, barWidth, barHeight, 8);
 
-        this.weatherText = this.add.text(window.innerWidth - 270, window.innerHeight - 300, 'Weather: CLEAR ☀️', {
-            fontSize: '16px', fill: '#ffff00', fontStyle: 'bold', stroke: '#000', strokeThickness: 2
+        // XP Bar Fill
+        this.xpBarFill = this.add.graphics().setScrollFactor(0).setDepth(201);
+        this.xpText = this.add.text(centerX, bottomY + barHeight / 2, 'XP: 0 / 300', {
+            fontSize: '11px', fill: '#fff', fontStyle: 'bold', fontFamily: 'Arial'
+        }).setScrollFactor(0).setOrigin(0.5).setDepth(202);
+
+        // === WATER BAR - Blue gradient ===
+        this.waterBarBg = this.add.graphics().setScrollFactor(0).setDepth(200);
+        this.waterBarBg.fillStyle(0x0a2540, 0.85);
+        this.waterBarBg.fillRoundedRect(centerX - barWidth / 2, bottomY + 22, barWidth, barHeight, 8);
+        this.waterBarBg.lineStyle(2, 0x3a7fc4, 1);
+        this.waterBarBg.strokeRoundedRect(centerX - barWidth / 2, bottomY + 22, barWidth, barHeight, 8);
+
+        this.waterBarFill = this.add.graphics().setScrollFactor(0).setDepth(201);
+        this.waterText = this.add.text(centerX, bottomY + 22 + barHeight / 2, 'Water: 100%', {
+            fontSize: '11px', fill: '#fff', fontStyle: 'bold', fontFamily: 'Arial'
+        }).setScrollFactor(0).setOrigin(0.5).setDepth(202);
+
+        // === WEATHER INDICATOR - Organic style ===
+        this.weatherText = this.add.text(window.innerWidth - 270, window.innerHeight - 290, 'Weather: CLEAR ☀️', {
+            fontSize: '14px', fill: '#ffff00', fontStyle: 'bold', stroke: '#1a3d1a', strokeThickness: 3, fontFamily: 'Arial'
         }).setScrollFactor(0).setDepth(200);
 
-        const lbX = 20;
-        const lbY = 100;
-        this.add.rectangle(lbX + 100, lbY + 140, 220, 300, 0x000000, 0.5).setScrollFactor(0).setStrokeStyle(2, 0xffd700).setDepth(200);
-        this.add.text(lbX + 110, lbY + 10, '🏆 Leaderboard', { fontSize: '20px', fill: '#ffd700', fontStyle: 'bold', stroke: '#000', strokeThickness: 2 }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(201);
+        // === LEADERBOARD - Organic Nature Panel ===
+        const lbX = 15;
+        const lbY = 80;
+        const lbWidth = 200;
+        const lbHeight = 280;
 
+        // Leaderboard background
+        this.lbBg = this.add.graphics().setScrollFactor(0).setDepth(200);
+        this.lbBg.fillGradientStyle(0x1a4a1a, 0x1a4a1a, 0x0d2d0d, 0x0d2d0d, 0.9);
+        this.lbBg.fillRoundedRect(lbX, lbY, lbWidth, lbHeight, 16);
+        this.lbBg.lineStyle(3, 0x4a9f4a, 0.8);
+        this.lbBg.strokeRoundedRect(lbX, lbY, lbWidth, lbHeight, 16);
+
+        // Top highlight line
+        this.lbBg.lineStyle(2, 0x80ff80, 0.3);
+        this.lbBg.beginPath();
+        this.lbBg.moveTo(lbX + 20, lbY + 2);
+        this.lbBg.lineTo(lbX + lbWidth - 20, lbY + 2);
+        this.lbBg.strokePath();
+
+        // Leaderboard title
+        this.add.text(lbX + lbWidth / 2, lbY + 20, '🏆 Leaderboard', {
+            fontSize: '16px', fill: '#ffd700', fontStyle: 'bold', stroke: '#1a3d1a', strokeThickness: 3, fontFamily: 'Arial'
+        }).setScrollFactor(0).setOrigin(0.5).setDepth(201);
+
+        // Leaderboard entries
         this.leaderboardEntries = [];
         for (let i = 0; i < 10; i++) {
-            this.leaderboardEntries.push(this.add.text(lbX + 110, lbY + 45 + (i * 25), '', { fontSize: '14px', fill: '#fff', stroke: '#000', strokeThickness: 2 }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(201));
+            const entryY = lbY + 50 + (i * 22);
+            const color = i === 0 ? '#ffd700' : i === 1 ? '#e0e0e0' : i === 2 ? '#cd853f' : '#90EE90';
+            this.leaderboardEntries.push(
+                this.add.text(lbX + lbWidth / 2, entryY, '', {
+                    fontSize: '12px', fill: color, stroke: '#0a1f0a', strokeThickness: 2, fontFamily: 'Arial'
+                }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(201)
+            );
         }
 
-        // Mutation Menu Button (Visual indicator)
-        this.mutationBtn = this.add.text(window.innerWidth - 150, window.innerHeight - 50, '[ M ] Mutations', {
-            fontSize: '18px', fill: '#00ff00', backgroundColor: '#000', padding: { x: 10, y: 5 }
+        // === MUTATION BUTTON - Organic style ===
+        this.mutationBtn = this.add.text(window.innerWidth - 140, window.innerHeight - 50, '🧬 Mutations [M]', {
+            fontSize: '14px', fill: '#90EE90', backgroundColor: 'rgba(20, 60, 20, 0.9)',
+            padding: { x: 12, y: 8 }, fontFamily: 'Arial'
         }).setScrollFactor(0).setDepth(200).setInteractive();
         this.mutationBtn.on('pointerdown', () => this.toggleMutationMenu());
     }
@@ -552,7 +650,7 @@ export default class GameScene extends Phaser.Scene {
         this.minimapBg.strokeRect(ox, oy, this.minimapSize, this.minimapSize);
 
         const mapScale = this.minimapSize / this.MAP_WIDTH;
-        const tileSize = 512;
+        const tileSize = 128; // Match biomes tile size
         const cols = Math.ceil(this.MAP_WIDTH / tileSize);
         const rows = Math.ceil(this.MAP_HEIGHT / tileSize);
 
@@ -602,6 +700,9 @@ export default class GameScene extends Phaser.Scene {
             const bot = this.bots.create(x, y, 'seed');
             bot.setScale(0.5);
             bot.setCollideWorldBounds(true);
+            // Smaller circular hitbox for bots
+            const botRadius = 24;
+            bot.body.setCircle(botRadius, bot.width / 2 - botRadius, bot.height / 2 - botRadius);
 
             // Bot Genetics
             const variantRoll = Math.random();
@@ -689,6 +790,7 @@ export default class GameScene extends Phaser.Scene {
         defender.body.setVelocity(Math.cos(angle) * 300, Math.sin(angle) * 300);
         attacker.body.setVelocity(Math.cos(angle + Math.PI) * 100, Math.sin(angle + Math.PI) * 100);
         defender.setTint(0xff0000);
+        this.playSound('hit');
         this.time.delayedCall(200, () => {
             // Restore variant tint
             if (defStats.variant === 'golden') defender.setTint(0xFFD700);
@@ -757,6 +859,7 @@ export default class GameScene extends Phaser.Scene {
         const waterGain = (type === 'water') ? (isSuper ? 30 : 10) : 0;
 
         this.gainXP(xp);
+        this.playSound('collect');
         this.playerStats.water = Math.min(this.playerStats.maxWater, this.playerStats.water + waterGain);
 
         if (isSuper) {
@@ -819,6 +922,7 @@ export default class GameScene extends Phaser.Scene {
 
     triggerEvolution() {
         this.isEvolving = true;
+        this.playSound('levelup');
 
         // Award DNA Point
         this.playerStats.dna++;
@@ -869,12 +973,32 @@ export default class GameScene extends Phaser.Scene {
     }
 
     updateUI() {
+        const centerX = window.innerWidth / 2;
+        const bottomY = window.innerHeight - 70;
+        const barWidth = 350;
+        const barHeight = 16;
+
         const xpProg = Math.min(1, this.playerStats.xp / this.playerStats.nextLevelXP);
-        this.xpBarFill.width = 400 * xpProg;
+
+        // Redraw XP bar fill using Graphics
+        this.xpBarFill.clear();
+        if (xpProg > 0) {
+            this.xpBarFill.fillStyle(0x32CD32, 1);
+            this.xpBarFill.fillRoundedRect(centerX - barWidth / 2 + 2, bottomY + 2, (barWidth - 4) * xpProg, barHeight - 4, 6);
+        }
         this.xpText.setText(`XP: ${this.playerStats.xp} / ${this.playerStats.nextLevelXP}`);
+
         const waterProg = Math.min(1, this.playerStats.water / this.playerStats.maxWater);
-        this.waterBarFill.width = 400 * waterProg;
+
+        // Redraw Water bar fill using Graphics
+        this.waterBarFill.clear();
+        if (waterProg > 0) {
+            this.waterBarFill.fillStyle(0x2196F3, 1);
+            this.waterBarFill.fillRoundedRect(centerX - barWidth / 2 + 2, bottomY + 24, (barWidth - 4) * waterProg, barHeight - 4, 6);
+        }
         this.waterText.setText(`Water: ${Math.floor(this.playerStats.water)}%`);
+
+        // Leaderboard
         let all = [{ name: this.nickname, xp: this.playerStats.xp, isMe: true }];
         this.bots.getChildren().forEach(b => {
             if (b.active) all.push({ name: b.getData('stats').name, xp: b.getData('stats').xp, isMe: false });
@@ -883,10 +1007,54 @@ export default class GameScene extends Phaser.Scene {
         for (let i = 0; i < 10; i++) {
             if (all[i]) {
                 this.leaderboardEntries[i].setText(`${i + 1}. ${all[i].name}: ${all[i].xp}`);
-                this.leaderboardEntries[i].setColor(all[i].isMe ? '#0f0' : '#fff');
+                // Use nature colors for leaderboard
+                const color = all[i].isMe ? '#90EE90' : (i === 0 ? '#ffd700' : i === 1 ? '#e0e0e0' : i === 2 ? '#cd853f' : '#7CFF7C');
+                this.leaderboardEntries[i].setColor(color);
             } else {
                 this.leaderboardEntries[i].setText('');
             }
         }
     }
+
+    // === GAME AUDIO SYSTEM ===
+    initGameAudio() {
+        // Initialize sounds
+        this.hitSound = this.sound.add('hitSound', { volume: 0.4 });
+        this.collectSound = this.sound.add('collectSound', { volume: 0.3 });
+        this.levelupSound = this.sound.add('levelupSound', { volume: 0.5 });
+        this.rainSound = this.sound.add('rainSound', { volume: 0.2, loop: true });
+
+        // Store for weather
+        this.rainSoundPlaying = false;
+    }
+
+    // Helper to play sounds respecting settings
+    playSound(soundKey) {
+        if (!window.evoAudioSettings?.sound) return;
+
+        switch (soundKey) {
+            case 'hit':
+                if (this.hitSound) this.hitSound.play();
+                break;
+            case 'collect':
+                if (this.collectSound) this.collectSound.play();
+                break;
+            case 'levelup':
+                if (this.levelupSound) this.levelupSound.play();
+                break;
+            case 'rain_start':
+                if (this.rainSound && !this.rainSoundPlaying) {
+                    this.rainSound.play();
+                    this.rainSoundPlaying = true;
+                }
+                break;
+            case 'rain_stop':
+                if (this.rainSound && this.rainSoundPlaying) {
+                    this.rainSound.stop();
+                    this.rainSoundPlaying = false;
+                }
+                break;
+        }
+    }
 }
+
