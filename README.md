@@ -48,7 +48,7 @@ This isn't just a game; it's a simulation of ruthless natural selection.
 ## 📸 Visual Gallery
 
 ### MainMenu
-![MainMenu](public/assets/screenshots/main_menu.jpg)
+![MainMenu](public/assets/screenshots/main_menu.png)
 
 ### MiniMap
 ![MiniMap](public/assets/screenshots/minimap.png)
