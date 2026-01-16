@@ -1,11 +1,33 @@
-# 🦖 EvoWorld
+# 🦖 EvoWorld  
 ### *The Future of Browser Survival*
 
-![Status](https://img.shields.io/badge/Project_Status-Active_Development-success?style=for-the-badge&logo=statuspage) ![Version](https://img.shields.io/badge/Version-0.4.0-blueviolet?style=for-the-badge) ![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)
+![Status](https://img.shields.io/badge/Project_Status-Active_Development-success?style=for-the-badge&logo=statuspage) ![Version](https://img.shields.io/badge/Version-0.4.0-blueviolet?style=for-the-badge) ![License](https://img.shields.io/badge/License-Evaluation--Only-orange?style=for-the-badge)
 
 **EvoWorld** redefines the .io survival genre by merging the chaotic fun of *Mope.io* with deep, strategic evolution mechanics. A fully interactive, living ecosystem built for the modern web.
 
-[Explore Features](#-key-features) • [View Gallery](#-visual-gallery) • [Tech Stack](#-technology-stack) • [Roadmap](#-development-roadmap)
+[Explore Features](#-key-features) • [Quickstart](#-quickstart) • [View Gallery](#-visual-gallery) • [Tech Stack](#-technology-stack) • [Roadmap](#-development-roadmap)
+
+---
+
+## ⚡ Quickstart
+
+### Requirements
+- Node.js (LTS recommended)
+- npm
+
+### Run locally
+```bash
+npm install
+npm run dev
+```
+
+Open the printed local URL in your browser.
+
+### Controls
+- **Mouse** — movement (smooth mouse-following with look-ahead camera)
+- **Abilities** — shown in UI (e.g. Dash / Heal / Snap)
+
+> ⚠️ Repo hygiene: do **NOT** commit `node_modules/`. Make sure it is in `.gitignore` and removed from git history if it was committed.
 
 ---
 
@@ -32,16 +54,16 @@ This isn't just a game; it's a simulation of ruthless natural selection.
 ## 🔍 Deep Dive: The Experience
 
 ### 🔴 For the Hunter (The Carnivore)
-*   **Aggressive Playstyle**: Designed for players who crave the thrill of the hunt.
-*   **Instant Gratification**: Use the **Dash** ability to close gaps and secure kills.
-*   **High Risk, High Reward**: Lower max health, but higher damage output.
-*   **Apex Potential**: Evolve into the *Venus Flytrap* to dominate the food chain.
+* **Aggressive Playstyle**: Designed for players who crave the thrill of the hunt.
+* **Instant Gratification**: Use the **Dash** ability to close gaps and secure kills.
+* **High Risk, High Reward**: Lower max health, but higher damage output.
+* **Apex Potential**: Evolve into the *Venus Flytrap* to dominate the food chain.
 
 ### 🟢 For the Guardian (The Tree)
-*   **Defensive Playstyle**: Built for players who prefer sustainability and control.
-*   **Sustainability**: Use **Photosynthesis** to heal and tank damage.
-*   **Territory Control**: dominate an area by outlasting your opponents.
-*   **Team Anchor**: Future updates will allow Trees to buff nearby allies.
+* **Defensive Playstyle**: Built for players who prefer sustainability and control.
+* **Sustainability**: Use **Photosynthesis** to heal and tank damage.
+* **Territory Control**: Dominate an area by outlasting your opponents.
+* **Team Anchor**: Future updates will allow Trees to buff nearby allies.
 
 ---
 
@@ -66,9 +88,9 @@ This isn't just a game; it's a simulation of ruthless natural selection.
 
 ## 🏗️ Architecture Highlights
 
-*   **Entity-Component System**: Custom implementation within Phaser 3 for modular ability handling.
-*   **Spatial Partitioning**: Optimized collision detection for hundreds of entities using QuadTrees (Planned).
-*   **Client-Side Prediction**: Smooth movement interpolation to mask latency (Multiplayer Phase).
+* **Entity-Component System**: Custom implementation within Phaser 3 for modular ability handling.
+* **Spatial Partitioning**: Optimized collision detection for hundreds of entities using QuadTrees (Planned).
+* **Client-Side Prediction**: Smooth movement interpolation to mask latency (Multiplayer Phase).
 
 ---
 
@@ -77,64 +99,75 @@ This isn't just a game; it's a simulation of ruthless natural selection.
 I am constantly working on this project. Here is the master plan for **EvoWorld**:
 
 ### [✅] Phase 1: Foundation (Completed)
-*   [x] ***Core Game Loop (Eat, Grow, Die).***
-*   [x] ***Basic Evolution System.***
-*   [x] ***Resource Spawning.***
+* [x] ***Core Game Loop (Eat, Grow, Die).***
+* [x] ***Basic Evolution System.***
+* [x] ***Resource Spawning.***
 
 ### [✅] Phase 2: The Split (Completed)
-*   [x] **Path Selection**: Evil vs Peace.
-*   [x] **Bot AI**: Intelligent resource gathering.
-*   [x] **UI Overhaul**: XP Bars, Leaderboards.
+* [x] **Path Selection**: Evil vs Peace.
+* [x] **Bot AI**: Intelligent resource gathering.
+* [x] **UI Overhaul**: XP Bars, Leaderboards.
 
 ### [✅] Phase 3: Expansion (Completed)
-*   [x] **Biomes**: Meadow, Dark Forest, Water(Lakes).
-*   [x] **Thirst System**: Water mechanics.
-*   [x] **Active Abilities**: Dash & Heal.
+* [x] **Biomes**: Meadow, Dark Forest, Water(Lakes).
+* [x] **Thirst System**: Water mechanics.
+* [x] **Active Abilities**: Dash & Heal.
 
 ### [✅] Phase 4: Weather & Atmosphere (Completed)
-*   [x] **Rainstorms**: Random events that refill water bars globally.
-*   [x] **Fog of War**: Reduced visibility in the Dark Forest.
-*   [x] **Day/Night Cycle**: Night brings dangerous mobs.
+* [x] **Rainstorms**: Random events that refill water bars globally.
+* [x] **Fog of War**: Reduced visibility in the Dark Forest.
+* [x] **Day/Night Cycle**: Night brings dangerous mobs.
 
 ### [✅] Phase 5: Extreme Biomes (Not-Fully-Completed)
-*   [ ] **The Desert**: Sandstorms and rapid dehydration. New **Cactus** path.
-*   [ ] **The Arctic**: Snow and freezing mechanics. New **Pine** path.
-*   [ ] **The Volcano**: Lava pools and burn damage. New **Fire Flower** path.
+* [ ] **The Desert**: Sandstorms and rapid dehydration. New **Cactus** path.
+* [ ] **The Arctic**: Snow and freezing mechanics. New **Pine** path.
+* [ ] **The Volcano**: Lava pools and burn damage. New **Fire Flower** path.
 
 ### [✅] Phase 6: Visual Overhaul & Polish (Not-Fully-Completed)
-*   [ ] **Organic World Generation**: Noise-based biome blending for natural terrain.
-*   [x] **High-Fidelity Assets**: Custom generated textures for Sand, Snow, and Lava.
-*   [ ] **Environmental Decorations**: Pseudo-3D obstacles (Cacti, Rocks, Trees) that blend with the terrain.
-*   [x] **Particle Effects**: Volcano smoke and atmospheric details.
+* [ ] **Organic World Generation**: Noise-based biome blending for natural terrain.
+* [x] **High-Fidelity Assets**: Custom generated textures for Sand, Snow, and Lava.
+* [ ] **Environmental Decorations**: Pseudo-3D obstacles (Cacti, Rocks, Trees) that blend with the terrain.
+* [x] **Particle Effects**: Volcano smoke and atmospheric details.
 
 ### [✅] Phase 7: Rare Genetics (Completed)
-*   [x] **Golden Seed**: 1/1000 chance to spawn with 2x XP gain.
-*   [x] **Crystal Variants**: Rare, shiny skin variants with slight defense boost.
-*   [x] **Hard Resources**: Purple resources that require multiple hits and give high XP.
-*   [x] **Movement Mechanics**: Smooth mouse-following movement with biome speed modifiers.
+* [x] **Golden Seed**: 1/1000 chance to spawn with 2x XP gain.
+* [x] **Crystal Variants**: Rare, shiny skin variants with slight defense boost.
+* [x] **Hard Resources**: Purple resources that require multiple hits and give high XP.
+* [x] **Movement Mechanics**: Smooth mouse-following movement with biome speed modifiers.
 
 ### [✅] Phase 8: Mutation System (Completed)
-*   [x] **DNA Points**: Earn points by leveling up.
-*   [x] **Skill Tree**: Unlock passive buffs (Speed, Health, Regen).
-*   [x] **Specializations**: Unique perks for Carnivores and Trees.
-*   [x] **Lava Damage**: Periodic damage when entering the Volcano biome.
-*   [x] **HP System**: Visual HP bars for all entities and health management.
+* [x] **DNA Points**: Earn points by leveling up.
+* [x] **Skill Tree**: Unlock passive buffs (Speed, Health, Regen).
+* [x] **Specializations**: Unique perks for Carnivores and Trees.
+* [x] **Lava Damage**: Periodic damage when entering the Volcano biome.
+* [x] **HP System**: Visual HP bars for all entities and health management.
 
 ### 🏰 Phase 9: Base Building
-*   [ ] **Root Network**: Fast travel tunnels for Trees.
-*   [ ] **Thorn Nests**: Traps and territory control for Carnivores.
+* [ ] **Root Network**: Fast travel tunnels for Trees.
+* [ ] **Thorn Nests**: Traps and territory control for Carnivores.
 
 ### ☄️ Phase 10: Cataclysms
-*   [ ] **Forest Fire**: Spreads dynamically from the Volcano.
-*   [ ] **The Flood**: Lakes expand, turning the map into an ocean.
+* [ ] **Forest Fire**: Spreads dynamically from the Volcano.
+* [ ] **The Flood**: Lakes expand, turning the map into an ocean.
 
 ### 🌐 Phase 11: Multiplayer
-*   [ ] **Global Servers**: Play with hundreds of players.
-*   [ ] **Clans**: Team up and dominate the leaderboard.
+* [ ] **Global Servers**: Play with hundreds of players.
+* [ ] **Clans**: Team up and dominate the leaderboard.
+
+---
+
+## 📄 License (Evaluation Only)
+
+This repository is **source-available** for:
+- personal learning,
+- code review,
+- recruitment / interview evaluation.
+
+Commercial use or redistribution requires permission.  
+Contact: **konalinio@gmail.com**
 
 ---
 
 <div align="center">
-  <p>© 2025 EvoWorld. Private Development Project.</p>
-  <p>Designed & Engineered by <b>SpartaKoli</b> with ❤️</p>
+  <p>© 2026 EvoWorld. Designed & Engineered by <b>SpartaKoli</b> with ❤️</p>
 </div>
